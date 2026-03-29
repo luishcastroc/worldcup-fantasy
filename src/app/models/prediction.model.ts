@@ -37,9 +37,9 @@ export function calculatePoints(
     actualHome: number,
     actualAway: number,
 ): number {
-    // Exact match = 2 points
+    // Exact match = 3 points
     if (predictedHome === actualHome && predictedAway === actualAway) {
-        return 2;
+        return 3;
     }
 
     // Correct outcome = 1 point

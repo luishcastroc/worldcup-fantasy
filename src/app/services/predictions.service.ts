@@ -196,7 +196,7 @@ export class PredictionsService {
   }
 
   getExactPredictions(): number {
-    return this.predictions().filter((p) => p.points_earned === 2).length;
+    return this.predictions().filter((p) => p.points_earned === 3).length;
   }
 
   getCorrectOutcomes(): number {
