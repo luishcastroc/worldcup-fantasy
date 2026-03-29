@@ -13,7 +13,7 @@ import {
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="mb-6">
                 <h1 class="text-3xl font-bold text-gray-900 mb-1">Administración</h1>
-                <p class="text-gray-600">Gestiona usuarios y códigos de invitación</p>
+                <p class="text-gray-600">Gestiona usuarios, invitaciones y resultados de partidos</p>
             </div>
 
             <!-- Tab navigation -->
@@ -31,6 +31,13 @@ import {
                     class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors -mb-px"
                 >
                     Invitaciones
+                </a>
+                <a
+                    routerLink="matches"
+                    routerLinkActive="border-b-2 border-primary-600 text-primary-600 font-medium"
+                    class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors -mb-px"
+                >
+                    Resultados
                 </a>
             </div>
 

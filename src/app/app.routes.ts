@@ -41,6 +41,10 @@ export const routes: Routes = [
                 path: 'invites',
                 loadComponent: () => import('./pages/admin/admin-invites.page').then(m => m.AdminInvitesPageComponent),
             },
+            {
+                path: 'matches',
+                loadComponent: () => import('./pages/admin/admin-matches.page').then(m => m.AdminMatchesPageComponent),
+            },
         ],
     },
     {

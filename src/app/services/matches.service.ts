@@ -98,4 +98,28 @@ export class MatchesService {
     );
     return Array.from(dates).sort();
   }
+
+  async setMatchResult(matchId: number, homeScore: number, awayScore: number): Promise<string> {
+    const { data, error } = await this.supabase.client.rpc('admin_set_match_result', {
+      p_match_id:   matchId,
+      p_home_score: homeScore,
+      p_away_score: awayScore,
+    });
+    if (error) throw error;
+    return data as string;
+  }
+
+  async clearMatchResult(matchId: number): Promise<string> {
+    const { data, error } = await this.supabase.client.rpc('admin_clear_match_result', {
+      p_match_id: matchId,
+    });
+    if (error) throw error;
+    return data as string;
+  }
+
+  async clearAllResults(): Promise<string> {
+    const { data, error } = await this.supabase.client.rpc('admin_clear_all_results');
+    if (error) throw error;
+    return data as string;
+  }
 }

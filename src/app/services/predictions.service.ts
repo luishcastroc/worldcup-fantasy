@@ -230,4 +230,8 @@ export class PredictionsService {
       (p) => p.match?.status === 'completed' && p.points_earned === 0
     ).length;
   }
+
+  reload(): void {
+    this.reloadTrigger.update(v => v + 1);
+  }
 }
