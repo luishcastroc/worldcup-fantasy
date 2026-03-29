@@ -2,8 +2,10 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { RankingsService } from '../services/rankings.service';
 import { SupabaseService } from '../services/supabase.service';
@@ -11,6 +13,7 @@ import { SupabaseService } from '../services/supabase.service';
 @Component({
     selector: 'app-rankings-page',
     standalone: true,
+    imports: [RouterLink],
     template: `
         <div class="max-w-7xl mx-auto px-4 py-6">
             <!-- Header -->
@@ -111,7 +114,11 @@ import { SupabaseService } from '../services/supabase.service';
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 @for (ranking of filteredRankings(); track ranking.user_id) {
-                                    <tr class="hover:bg-gray-50" [class.bg-primary-50]="isCurrentUser(ranking.user_id)">
+                                    <tr
+                                        class="hover:bg-gray-50 cursor-pointer transition-colors"
+                                        [class.bg-primary-50]="isCurrentUser(ranking.user_id)"
+                                        [routerLink]="isCurrentUser(ranking.user_id) ? ['/my-predictions'] : ['/user', ranking.user_id, 'predictions']"
+                                    >
                                         <!-- Rank -->
                                         <td class="px-4 py-4">
                                             @if (ranking.rank === 1) {
@@ -157,14 +164,18 @@ import { SupabaseService } from '../services/supabase.service';
                                                         {{ getInitial(ranking.username) }}
                                                     </div>
                                                 }
-                                                <div>
+                                                <div class="flex-1">
                                                     <p class="font-medium text-gray-900">
                                                         {{ ranking.username || 'Anónimo' }}
                                                         @if (isCurrentUser(ranking.user_id)) {
                                                             <span class="text-primary-600 text-sm">(Tú)</span>
                                                         }
                                                     </p>
+                                                    <p class="text-xs text-gray-400">Ver predicciones</p>
                                                 </div>
+                                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                </svg>
                                             </div>
                                         </td>
 
@@ -269,9 +280,14 @@ import { SupabaseService } from '../services/supabase.service';
         </div>
     `,
 })
-export class RankingsPageComponent {
+export class RankingsPageComponent implements OnInit {
     rankingsService = inject(RankingsService);
     supabaseService = inject(SupabaseService);
+
+    ngOnInit(): void {
+        // Always fetch fresh rankings when navigating to this page
+        this.rankingsService.reload();
+    }
 
     searchQuery = signal('');
 

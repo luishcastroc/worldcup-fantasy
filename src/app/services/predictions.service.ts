@@ -194,6 +194,25 @@ export class PredictionsService {
     return true;
   }
 
+  /** Fetch all predictions (with match+team joins) for an arbitrary user. */
+  async fetchPredictionsByUserId(userId: string): Promise<PredictionWithMatch[]> {
+    const { data, error } = await this.supabase.client
+      .from('predictions')
+      .select(`
+        *,
+        match:matches(
+          *,
+          home_team:teams!matches_home_team_id_fkey(*),
+          away_team:teams!matches_away_team_id_fkey(*)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []) as PredictionWithMatch[];
+  }
+
   getTotalPoints(): number {
     return this.predictions().reduce((sum, p) => sum + p.points_earned, 0);
   }
