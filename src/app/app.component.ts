@@ -8,15 +8,15 @@ import { NavbarComponent } from './components/navbar.component';
     standalone: true,
     imports: [RouterOutlet, NavbarComponent],
     template: `
-        <div class="min-h-screen flex flex-col">
-            <app-navbar />
-            <main class="flex-1">
+        <div class="h-screen flex flex-col overflow-hidden">
+            <app-navbar class="flex-shrink-0" />
+            <main class="flex-1 overflow-y-auto">
                 <router-outlet />
             </main>
-            <footer class="bg-fifa-dark text-white py-6">
+            <footer class="flex-shrink-0 bg-fifa-dark text-white py-4">
                 <div class="max-w-7xl mx-auto px-4 text-center">
-                    <p class="text-gray-400">Quiniela Mundial 2026 - ¡Predice y Gana!</p>
-                    <p class="text-sm text-gray-500 mt-2">
+                    <p class="text-gray-400 text-sm">Quiniela Mundial 2026 - ¡Predice y Gana!</p>
+                    <p class="text-xs text-gray-500 mt-1">
                         No afiliado con FIFA. Si pierdes, no nos eches la culpa... nosotros también perdimos 🤷‍♂️⚽
                     </p>
                 </div>
