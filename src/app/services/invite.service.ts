@@ -49,6 +49,24 @@ export class InviteService {
     });
 
     /**
+     * Validates an invite code WITHOUT consuming it.
+     * Can be called before authentication (uses anon key).
+     * Returns 'valid', 'invalid', or 'expired'.
+     */
+    async validateCode(code: string): Promise<'valid' | 'invalid' | 'expired'> {
+        const { data, error } = await this.supabase.client.rpc('validate_invite_code', {
+            p_code: code.trim().toUpperCase(),
+        });
+
+        if (error) {
+            console.error('Error validating invite code:', error);
+            return 'invalid';
+        }
+
+        return data as 'valid' | 'invalid' | 'expired';
+    }
+
+    /**
      * Redeems an invite code for the currently authenticated user.
      * Returns 'ok', 'invalid', 'expired', or 'already_approved'.
      */
