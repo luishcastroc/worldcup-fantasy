@@ -38,9 +38,18 @@ import { TeamFlagComponent } from './team-flag.component';
                 @if (hasChanges()) {
                     <button
                         (click)="savePrediction()"
-                        class="mt-2 px-3 py-1 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600"
+                        [disabled]="isSaving()"
+                        class="mt-2 px-3 py-1 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
                     >
-                        Guardar
+                        @if (isSaving()) {
+                            <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                            </svg>
+                            Guardando...
+                        } @else {
+                            Guardar
+                        }
                     </button>
                 }
             </div>
@@ -90,6 +99,7 @@ export class PredictionFormComponent {
     // Internal state
     homeScore = signal<number>(0);
     awayScore = signal<number>(0);
+    isSaving = signal<boolean>(false);
 
     // Track if values have been modified from the original prediction
     hasChanges = computed(() => {
@@ -104,7 +114,8 @@ export class PredictionFormComponent {
     });
 
     constructor() {
-        // Effect to sync prediction input with local state
+        // Effect to sync prediction input with local state.
+        // Also clears isSaving when the parent confirms the save by updating the prediction.
         effect(() => {
             const pred = this.prediction();
             if (pred) {
@@ -114,6 +125,7 @@ export class PredictionFormComponent {
                 this.homeScore.set(0);
                 this.awayScore.set(0);
             }
+            this.isSaving.set(false);
         });
     }
 
@@ -128,6 +140,7 @@ export class PredictionFormComponent {
     }
 
     savePrediction(): void {
+        this.isSaving.set(true);
         this.save.emit({
             match_id: this.match().id,
             predicted_home_score: this.homeScore(),
