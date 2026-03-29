@@ -137,8 +137,8 @@ import { PredictionsService } from '../services/predictions.service';
                                                     [class.bg-red-100]="prediction.points_earned === 0"
                                                     [class.text-red-700]="prediction.points_earned === 0"
                                                 >
-                                                    @if (prediction.points_earned === 2) {
-                                                        +2
+                                                    @if (prediction.points_earned === 3) {
+                                                        +3
                                                     } @else if (prediction.points_earned === 1) {
                                                         +1
                                                     } @else {

@@ -119,7 +119,7 @@ import { PredictionsService } from '../services/predictions.service';
                                                 [class.bg-green-100]="prediction.points_earned > 0"
                                                 [class.bg-red-100]="prediction.points_earned === 0"
                                             >
-                                                @if (prediction.points_earned === 2) {
+                                                @if (prediction.points_earned === 3) {
                                                     <svg
                                                         class="w-5 h-5 text-green-600"
                                                         fill="currentColor"
@@ -131,7 +131,7 @@ import { PredictionsService } from '../services/predictions.service';
                                                             clip-rule="evenodd"
                                                         />
                                                     </svg>
-                                                    <span class="text-sm font-semibold text-green-700">¡Exacto! +2</span>
+                                                    <span class="text-sm font-semibold text-green-700">¡Exacto! +3</span>
                                                 } @else if (prediction.points_earned === 1) {
                                                     <svg
                                                         class="w-5 h-5 text-green-600"

@@ -229,7 +229,7 @@ import { SupabaseService } from '../services/supabase.service';
                 <div class="grid md:grid-cols-3 gap-4">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                            <span class="text-green-700 font-bold">+2</span>
+                            <span class="text-green-700 font-bold">+3</span>
                         </div>
                         <div>
                             <p class="font-medium text-gray-900">Resultado Exacto</p>
