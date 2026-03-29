@@ -4,17 +4,17 @@ A prediction game for the FIFA 2026 World Cup. Predict match results and compete
 
 ## Features
 
-- 🔐 Google Authentication via Supabase
-- ⚽ Predict scores for all 72 group stage matches
-- 🏆 Earn points for correct predictions
-- 📊 Real-time leaderboard rankings
-- 📱 Responsive design for mobile and desktop
+- Google Authentication via Supabase
+- Predict scores for all 72 group stage matches
+- Earn points for correct predictions
+- Real-time leaderboard rankings
+- Responsive design for mobile and desktop
 
 ## Scoring System
 
 | Prediction Type | Points |
 |-----------------|--------|
-| Exact score match | **2 points** |
+| Exact score match | **3 points** |
 | Correct outcome (win/lose/draw) | **1 point** |
 | Wrong prediction | **0 points** |
 
@@ -25,60 +25,57 @@ A prediction game for the FIFA 2026 World Cup. Predict match results and compete
 
 ## Tech Stack
 
-- **Framework**: Angular 21 with Analog.js
+- **Framework**: Angular 20 (standalone components, signals)
 - **Styling**: Tailwind CSS
 - **Authentication**: Supabase Auth (Google OAuth)
 - **Database**: Supabase (PostgreSQL)
-- **State Management**: Angular Signals
+- **Deployment**: Vercel
 
 ## Setup
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or pnpm
+- Node.js 22+
+- npm
 - Supabase account
 
 ### 1. Clone and Install
 
 ```bash
+git clone https://github.com/luishcastroc/worldcup-fantasy.git
 cd worldcup-fantasy
 npm install
 ```
 
-### 2. Set up Supabase
+### 2. Configure Environment
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_PREDICTION_DEADLINE=2026-06-11T00:00:00Z
+```
+
+### 3. Set up Supabase
 
 1. Create a new Supabase project at [supabase.com](https://supabase.com)
 
-2. Go to **SQL Editor** and run the migration:
-   - Copy contents from `supabase/migrations/001_initial_schema.sql`
-   - Run in SQL Editor
+2. Run the migrations in order via the **SQL Editor**:
+   - `supabase/migrations/001_initial_schema.sql`
+   - `supabase/migrations/002_update_scoring.sql`
+   - `supabase/migrations/003_fix_match_schedule.sql`
 
 3. Seed the database with teams and matches:
-   - Copy contents from `supabase/seed.sql`
-   - Run in SQL Editor
+   - Run `supabase/seed.sql` in the SQL Editor
 
 4. Enable Google Auth:
-   - Go to **Authentication > Providers > Google**
-   - Enable Google provider
-   - Add your Google OAuth credentials
-
-5. Get your API keys:
-   - Go to **Settings > API**
-   - Copy your **Project URL** and **anon public** key
-
-### 3. Configure Environment
-
-Update `src/environments/environment.ts`:
-
-```typescript
-export const environment = {
-  production: false,
-  supabaseUrl: 'YOUR_SUPABASE_PROJECT_URL',
-  supabaseAnonKey: 'YOUR_SUPABASE_ANON_KEY',
-  predictionDeadline: '2026-06-10T23:59:59Z',
-};
-```
+   - Go to **Authentication → Providers → Google**
+   - Enable Google provider and add your OAuth credentials
 
 ### 4. Run Development Server
 
@@ -88,70 +85,22 @@ npm run dev
 
 Open [http://localhost:4200](http://localhost:4200)
 
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── components/        # Reusable UI components
-│   │   ├── countdown.component.ts
-│   │   ├── match-card.component.ts
-│   │   ├── navbar.component.ts
-│   │   ├── prediction-form.component.ts
-│   │   └── team-flag.component.ts
-│   │
-│   ├── guards/            # Route guards
-│   │   └── auth.guard.ts
-│   │
-│   ├── models/            # TypeScript interfaces
-│   │   ├── match.model.ts
-│   │   ├── prediction.model.ts
-│   │   ├── ranking.model.ts
-│   │   └── team.model.ts
-│   │
-│   ├── pages/             # Page components
-│   │   ├── auth/callback.page.ts
-│   │   ├── login.page.ts
-│   │   ├── matches.page.ts
-│   │   ├── my-predictions.page.ts
-│   │   ├── profile.page.ts
-│   │   ├── rankings.page.ts
-│   │   └── results.page.ts
-│   │
-│   ├── services/          # Data services
-│   │   ├── auth.service.ts
-│   │   ├── matches.service.ts
-│   │   ├── predictions.service.ts
-│   │   ├── rankings.service.ts
-│   │   └── supabase.service.ts
-│   │
-│   ├── app.component.ts
-│   ├── app.config.ts
-│   └── app.routes.ts
-│
-├── environments/
-│   ├── environment.ts
-│   └── environment.prod.ts
-│
-└── styles.scss
-```
-
-## Deployment
-
-### Vercel (Recommended)
+### 5. Run Tests
 
 ```bash
-npm install -g vercel
-vercel
+npm test
 ```
 
-### Build for Production
+## Deployment (Vercel)
 
-```bash
-npm run build
-```
+1. Connect the GitHub repo to your Vercel project
+2. Add the following environment variables in Vercel project settings:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_PREDICTION_DEADLINE`
+3. Vercel will build and deploy automatically on every push to `main`
 
-Output will be in `dist/analog/`
+Build output is in `dist/worldcup-fantasy/browser/`.
 
 ## License
 
