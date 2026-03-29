@@ -96,6 +96,16 @@ import { SupabaseService } from '../services/supabase.service';
                                         >
                                             Perfil
                                         </a>
+                                        @if (isAdmin()) {
+                                            <hr class="my-1" />
+                                            <a
+                                                routerLink="/admin"
+                                                (click)="closeMenu()"
+                                                class="block px-4 py-2 text-sm text-purple-700 hover:bg-gray-100"
+                                            >
+                                                Administración
+                                            </a>
+                                        }
                                         <hr class="my-1" />
                                         <button
                                             (click)="signOut()"
@@ -188,6 +198,7 @@ export class NavbarComponent {
     isMenuOpen = signal(false);
 
     isAuthenticated = computed(() => this.supabase.currentUser() !== null);
+    isAdmin = computed(() => this.authService.isAdmin());
 
     userName = computed(() => {
         const user = this.supabase.currentUser();

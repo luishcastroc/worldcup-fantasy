@@ -1,10 +1,15 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
 
-export const authGuard: CanActivateFn = async () => {
+/**
+ * Protects the /invite route.
+ * - Unauthenticated users → /login
+ * - Already approved users → /matches (no need to enter a code)
+ * - Pending users → allowed through
+ */
+export const inviteGuard: CanActivateFn = async () => {
     const supabase = inject(SupabaseService);
     const auth = inject(AuthService);
     const router = inject(Router);
@@ -16,17 +21,10 @@ export const authGuard: CanActivateFn = async () => {
         return false;
     }
 
-    // Wait for the profile resource to finish loading so we can check approval status
     await auth.waitForProfile();
 
-    if (auth.isPending()) {
-        router.navigate(['/invite']);
-        return false;
-    }
-
-    if (auth.currentProfile()?.status === 'suspended') {
-        await supabase.signOut();
-        router.navigate(['/login']);
+    if (auth.isApproved()) {
+        router.navigate(['/matches']);
         return false;
     }
 

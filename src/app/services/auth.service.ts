@@ -1,4 +1,6 @@
 import { computed, inject, Injectable, resource, ResourceRef } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { filter, firstValueFrom } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 import { Profile } from '../models';
 
@@ -33,6 +35,18 @@ export class AuthService {
   currentProfile = computed(() => this.profileResource.value());
   isAuthenticated = computed(() => this.supabase.currentUser() !== null);
   isLoading = computed(() => this.supabase.isLoading());
+  isApproved = computed(() => this.currentProfile()?.status === 'approved');
+  isAdmin = computed(() => this.currentProfile()?.role === 'admin');
+  isPending = computed(() => this.currentProfile()?.status === 'pending');
+
+  // Must be a field initializer — toObservable() requires an injection context
+  private readonly profileLoading$ = toObservable(this.profileResource.isLoading);
+
+  /** Waits for the profile resource to finish its initial load. Used by authGuard. */
+  async waitForProfile(): Promise<Profile | null> {
+    await firstValueFrom(this.profileLoading$.pipe(filter(loading => !loading)));
+    return this.currentProfile();
+  }
 
   async signInWithGoogle(): Promise<void> {
     await this.supabase.signInWithGoogle();

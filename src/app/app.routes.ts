@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
+import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
+import { inviteGuard } from './guards/invite.guard';
 
 export const routes: Routes = [
     {
@@ -15,6 +17,31 @@ export const routes: Routes = [
     {
         path: 'auth/callback',
         loadComponent: () => import('./pages/auth/callback.page').then(m => m.AuthCallbackPageComponent),
+    },
+    {
+        path: 'invite',
+        loadComponent: () => import('./pages/invite.page').then(m => m.InvitePageComponent),
+        canActivate: [inviteGuard],
+    },
+    {
+        path: 'admin',
+        loadComponent: () => import('./pages/admin/admin.page').then(m => m.AdminPageComponent),
+        canActivate: [authGuard, adminGuard],
+        children: [
+            {
+                path: '',
+                redirectTo: 'users',
+                pathMatch: 'full',
+            },
+            {
+                path: 'users',
+                loadComponent: () => import('./pages/admin/admin-users.page').then(m => m.AdminUsersPageComponent),
+            },
+            {
+                path: 'invites',
+                loadComponent: () => import('./pages/admin/admin-invites.page').then(m => m.AdminInvitesPageComponent),
+            },
+        ],
     },
     {
         path: 'matches',
