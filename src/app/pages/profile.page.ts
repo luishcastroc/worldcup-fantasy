@@ -1,8 +1,8 @@
 import {
   Component,
   computed,
-  effect,
   inject,
+  linkedSignal,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -48,12 +48,13 @@ import { SupabaseService } from '../services/supabase.service';
                     <div class="flex gap-3">
                         <input
                             type="text"
-                            [(ngModel)]="editUsername"
+                            [ngModel]="editUsername()"
+                            (ngModelChange)="editUsername.set($event)"
                             (focus)="clearMessage()"
                             placeholder="Ingresa tu nombre"
                             class="input-field flex-1"
                         />
-                        <button (click)="updateUsername()" [disabled]="isSaving() || !editUsername" class="btn-primary">
+                        <button (click)="updateUsername()" [disabled]="isSaving() || !editUsername()" class="btn-primary">
                             @if (isSaving()) {
                                 Guardando...
                             } @else {
@@ -115,7 +116,10 @@ export class ProfilePageComponent {
     predictionsService = inject(PredictionsService);
     router = inject(Router);
 
-    editUsername = '';
+    /** Synced from the profile resource, locally editable by the user. */
+    editUsername = linkedSignal(
+        () => this.authService.currentProfile()?.username ?? this.userName(),
+    );
     isSaving = signal(false);
     saveMessage = signal('');
     saveError = signal(false);
@@ -149,18 +153,8 @@ export class ProfilePageComponent {
         return name ? name.charAt(0).toUpperCase() : 'U';
     };
 
-    /** Sync editUsername from the profile resource whenever it changes. */
-    private editUsernameSync = effect(() => {
-        const profile = this.authService.currentProfile();
-        if (profile?.username) {
-            this.editUsername = profile.username;
-        } else {
-            this.editUsername = this.userName();
-        }
-    });
-
     async updateUsername(): Promise<void> {
-        if (!this.editUsername.trim()) return;
+        if (!this.editUsername().trim()) return;
 
         this.isSaving.set(true);
         this.saveMessage.set('');
@@ -168,7 +162,7 @@ export class ProfilePageComponent {
 
         try {
             await this.authService.updateProfile({
-                username: this.editUsername.trim(),
+                username: this.editUsername().trim(),
             });
             this.saveMessage.set('¡Perfil actualizado exitosamente!');
             this.saveError.set(false);

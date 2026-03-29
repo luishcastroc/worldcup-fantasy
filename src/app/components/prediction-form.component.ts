@@ -1,10 +1,9 @@
 import {
   Component,
   computed,
-  effect,
   input,
+  linkedSignal,
   output,
-  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -123,10 +122,19 @@ export class PredictionFormComponent {
     // Signal output
     save = output<PredictionInput>();
 
-    // Internal state
-    homeScore = signal<number>(0);
-    awayScore = signal<number>(0);
-    isSaving = signal<boolean>(false);
+    // Internal state — linked to prediction input, locally mutable
+    homeScore = linkedSignal<Prediction | null, number>({
+        source: this.prediction,
+        computation: (pred) => pred?.predicted_home_score ?? 0,
+    });
+    awayScore = linkedSignal<Prediction | null, number>({
+        source: this.prediction,
+        computation: (pred) => pred?.predicted_away_score ?? 0,
+    });
+    isSaving = linkedSignal<Prediction | null, boolean>({
+        source: this.prediction,
+        computation: () => false,
+    });
 
     // Track if values have been modified from the original prediction
     hasChanges = computed(() => {
@@ -138,22 +146,6 @@ export class PredictionFormComponent {
         // Has existing prediction - show save only if changed
         return this.homeScore() !== pred.predicted_home_score || this.awayScore() !== pred.predicted_away_score;
     });
-
-    constructor() {
-        // Effect to sync prediction input with local state.
-        // Also clears isSaving when the parent confirms the save by updating the prediction.
-        effect(() => {
-            const pred = this.prediction();
-            if (pred) {
-                this.homeScore.set(pred.predicted_home_score);
-                this.awayScore.set(pred.predicted_away_score);
-            } else {
-                this.homeScore.set(0);
-                this.awayScore.set(0);
-            }
-            this.isSaving.set(false);
-        });
-    }
 
     onHomeScoreChange(event: Event): void {
         const value = Number.parseInt((event.target as HTMLInputElement).value, 10);
@@ -172,7 +164,7 @@ export class PredictionFormComponent {
             predicted_home_score: this.homeScore(),
             predicted_away_score: this.awayScore(),
         });
-        // Note: The parent updates the prediction input, which triggers the effect
-        // to sync local state, automatically hiding the save button
+        // Note: The parent updates the prediction input, which triggers linkedSignal
+        // to re-derive local state, automatically hiding the save button
     }
 }
