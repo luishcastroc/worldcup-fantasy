@@ -1,4 +1,9 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { UserRanking } from '../models';
 import { RankingsService } from '../services/rankings.service';
@@ -16,34 +21,34 @@ import { SupabaseService } from '../services/supabase.service';
             </div>
 
             <!-- Current User Position -->
-            @if (currentUserRanking()) {
+            @if (currentUserRanking(); as ranking) {
                 <div class="card bg-gradient-to-r from-primary-500 to-primary-600 text-white p-6 mb-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                <span class="text-3xl font-bold">#{{ currentUserRanking()!.rank }}</span>
+                                <span class="text-3xl font-bold">#{{ ranking.rank }}</span>
                             </div>
                             <div>
                                 <p class="text-lg font-semibold">Tu Posición</p>
-                                <p class="text-primary-100">{{ currentUserRanking()!.username || 'Tú' }}</p>
+                                <p class="text-primary-100">{{ ranking.username || 'Tú' }}</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-4xl font-bold">{{ currentUserRanking()!.total_points }}</p>
+                            <p class="text-4xl font-bold">{{ ranking.total_points }}</p>
                             <p class="text-primary-100">puntos</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-white/20">
                         <div class="text-center">
-                            <p class="text-2xl font-bold">{{ currentUserRanking()!.exact_predictions }}</p>
+                            <p class="text-2xl font-bold">{{ ranking.exact_predictions }}</p>
                             <p class="text-xs text-primary-100">Exactos</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-bold">{{ currentUserRanking()!.correct_outcomes }}</p>
+                            <p class="text-2xl font-bold">{{ ranking.correct_outcomes }}</p>
                             <p class="text-xs text-primary-100">Acertados</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-bold">{{ currentUserRanking()!.total_predictions }}</p>
+                            <p class="text-2xl font-bold">{{ ranking.total_predictions }}</p>
                             <p class="text-xs text-primary-100">Total</p>
                         </div>
                     </div>
@@ -257,19 +262,21 @@ import { SupabaseService } from '../services/supabase.service';
                 </div>
                 <div class="mt-4 pt-4 border-t">
                     <p class="text-sm text-gray-600">
-                        <strong>Reglas de desempate:</strong> Puntos → Predicciones exactas → Goles en predicciones exactas
+                        <strong>Reglas de desempate:</strong> Puntos → Predicciones exactas → Goles en predicciones
+                        exactas
                     </p>
                 </div>
             </div>
         </div>
     `,
 })
-export class RankingsPageComponent implements OnInit {
+export class RankingsPageComponent {
     rankingsService = inject(RankingsService);
     supabaseService = inject(SupabaseService);
 
     searchQuery = signal('');
-    currentUserRanking = signal<UserRanking | null>(null);
+
+    currentUserRanking = computed(() => this.rankingsService.currentUserRankingResource.value());
 
     filteredRankings = computed(() => {
         const query = this.searchQuery().toLowerCase();
@@ -279,11 +286,6 @@ export class RankingsPageComponent implements OnInit {
 
         return rankings.filter(r => r.username?.toLowerCase().includes(query));
     });
-
-    async ngOnInit(): Promise<void> {
-        await this.rankingsService.loadRankings();
-        this.currentUserRanking.set(await this.rankingsService.getCurrentUserRanking());
-    }
 
     onSearchChange(event: Event): void {
         const value = (event.target as HTMLInputElement).value;

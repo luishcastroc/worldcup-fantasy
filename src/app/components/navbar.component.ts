@@ -1,5 +1,14 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
 
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
@@ -172,9 +181,9 @@ import { SupabaseService } from '../services/supabase.service';
     `,
 })
 export class NavbarComponent {
-    private authService = inject(AuthService);
-    private supabase = inject(SupabaseService);
-    private router = inject(Router);
+    private readonly authService = inject(AuthService);
+    private readonly supabase = inject(SupabaseService);
+    private readonly router = inject(Router);
 
     isMenuOpen = signal(false);
 

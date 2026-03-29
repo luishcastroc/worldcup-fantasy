@@ -1,44 +1,31 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, resource, ResourceRef } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { Match, MatchWithTeams, Team } from '../models';
+import { MatchWithTeams, Team } from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MatchesService {
-  matches = signal<MatchWithTeams[]>([]);
-  teams = signal<Team[]>([]);
-  isLoading = signal<boolean>(false);
-  error = signal<string | null>(null);
+  private supabase = inject(SupabaseService);
 
-  constructor(private supabase: SupabaseService) {}
+  /** Resource that loads all teams, sorted by group and name. */
+  teamsResource: ResourceRef<Team[]> = resource({
+    loader: async () => {
+      const { data, error } = await this.supabase.client
+        .from('teams')
+        .select('*')
+        .order('group_letter', { ascending: true })
+        .order('name', { ascending: true });
 
-  async loadTeams(): Promise<Team[]> {
-    const { data, error } = await this.supabase.client
-      .from('teams')
-      .select('*')
-      .order('group_letter', { ascending: true })
-      .order('name', { ascending: true });
+      if (error) throw error;
+      return (data || []) as Team[];
+    },
+    defaultValue: [],
+  });
 
-    if (error) {
-      console.error('Error loading teams:', error);
-      throw error;
-    }
-
-    this.teams.set(data || []);
-    return data || [];
-  }
-
-  async loadMatches(): Promise<MatchWithTeams[]> {
-    this.isLoading.set(true);
-    this.error.set(null);
-
-    try {
-      // First load teams if not already loaded
-      if (this.teams().length === 0) {
-        await this.loadTeams();
-      }
-
+  /** Resource that loads all matches with joined team data. */
+  matchesResource: ResourceRef<MatchWithTeams[]> = resource({
+    loader: async () => {
       const { data, error } = await this.supabase.client
         .from('matches')
         .select(`
@@ -48,19 +35,20 @@ export class MatchesService {
         `)
         .order('match_date', { ascending: true });
 
-      if (error) {
-        console.error('Error loading matches:', error);
-        this.error.set('Failed to load matches');
-        throw error;
-      }
+      if (error) throw error;
+      return (data || []) as MatchWithTeams[];
+    },
+    defaultValue: [],
+  });
 
-      const matches = (data || []) as MatchWithTeams[];
-      this.matches.set(matches);
-      return matches;
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
+  // Convenience computed signals (backward-compatible API)
+  matches = computed(() => this.matchesResource.value());
+  teams = computed(() => this.teamsResource.value());
+  isLoading = computed(() => this.matchesResource.isLoading());
+  error = computed<string | null>(() => {
+    const err = this.matchesResource.error();
+    return err ? err.message ?? 'Failed to load matches' : null;
+  });
 
   async getMatchById(id: number): Promise<MatchWithTeams | null> {
     const { data, error } = await this.supabase.client
@@ -86,7 +74,7 @@ export class MatchesService {
   }
 
   getMatchesByDate(date: string): MatchWithTeams[] {
-    return this.matches().filter((m) => 
+    return this.matches().filter((m) =>
       m.match_date.startsWith(date)
     );
   }

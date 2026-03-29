@@ -1,7 +1,16 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 
-import { MatchWithTeams, Prediction, PredictionInput } from '../models';
+import {
+  MatchWithTeams,
+  Prediction,
+  PredictionInput,
+} from '../models';
 import { PredictionFormComponent } from './prediction-form.component';
 import { TeamFlagComponent } from './team-flag.component';
 
@@ -191,7 +200,7 @@ export class MatchCardComponent {
 
     // Computed
     hasPrediction = computed(() => this.prediction() !== null);
-    
+
     hasResult = computed(() => {
         const m = this.match();
         return m.home_score !== null && m.away_score !== null;
@@ -201,17 +210,17 @@ export class MatchCardComponent {
         const m = this.match();
         const now = new Date();
         const matchDate = new Date(m.match_date);
-        
+
         // If status is explicitly set to completed or in_progress, use that
         if (m.status === 'completed') return 'completed';
         if (m.status === 'in_progress') return 'in_progress';
-        
+
         // If we have scores, it's completed
         if (m.home_score !== null && m.away_score !== null) return 'completed';
-        
+
         // If match date is in the future, it's upcoming
         if (matchDate > now) return 'upcoming';
-        
+
         // Match date has passed but no result yet
         return 'pending_result';
     });

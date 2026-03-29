@@ -1,8 +1,16 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { CountdownComponent } from '../components/countdown.component';
 import { MatchCardComponent } from '../components/match-card.component';
-import { Prediction, PredictionInput } from '../models';
+import {
+  Prediction,
+  PredictionInput,
+} from '../models';
 import { MatchesService } from '../services/matches.service';
 import { PredictionsService } from '../services/predictions.service';
 
@@ -100,12 +108,11 @@ import { PredictionsService } from '../services/predictions.service';
         </div>
     `,
 })
-export class MatchesPageComponent implements OnInit {
+export class MatchesPageComponent {
     matchesService = inject(MatchesService);
     predictionsService = inject(PredictionsService);
 
     selectedGroup = signal<string | null>(null);
-    predictionsMap = signal<Map<number, Prediction>>(new Map());
 
     groups = computed(() => this.matchesService.getGroupLetters());
 
@@ -119,11 +126,13 @@ export class MatchesPageComponent implements OnInit {
     totalMatches = computed(() => this.matchesService.matches().length);
 
     predictedCount = computed(() => {
-        return this.matchesService.matches().filter(m => this.predictionsMap().has(m.id)).length;
+        const map = this.predictionsService.predictionsMap();
+        return this.matchesService.matches().filter(m => map.has(m.id)).length;
     });
 
     pendingCount = computed(() => {
-        return this.matchesService.matches().filter(m => !this.predictionsMap().has(m.id) && m.status === 'scheduled')
+        const map = this.predictionsService.predictionsMap();
+        return this.matchesService.matches().filter(m => !map.has(m.id) && m.status === 'scheduled')
             .length;
     });
 
@@ -131,26 +140,12 @@ export class MatchesPageComponent implements OnInit {
         return this.matchesService.matches().filter(m => m.status === 'completed').length;
     });
 
-    async ngOnInit(): Promise<void> {
-        await Promise.all([this.matchesService.loadMatches(), this.loadPredictions()]);
-    }
-
-    private async loadPredictions(): Promise<void> {
-        const map = await this.predictionsService.getUserPredictionsMap();
-        this.predictionsMap.set(map);
-    }
-
     getPrediction(matchId: number): Prediction | null {
-        return this.predictionsMap().get(matchId) || null;
+        return this.predictionsService.predictionsMap().get(matchId) || null;
     }
 
     async onSavePrediction(input: PredictionInput): Promise<void> {
-        const saved = await this.predictionsService.savePrediction(input);
-        if (saved) {
-            // Update local map
-            const map = new Map(this.predictionsMap());
-            map.set(input.match_id, saved);
-            this.predictionsMap.set(map);
-        }
+        await this.predictionsService.savePrediction(input);
+        // Resources reload automatically via reloadTrigger in the service
     }
 }

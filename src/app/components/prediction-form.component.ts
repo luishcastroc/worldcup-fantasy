@@ -1,7 +1,18 @@
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { MatchWithTeams, Prediction, PredictionInput } from '../models';
+import {
+  MatchWithTeams,
+  Prediction,
+  PredictionInput,
+} from '../models';
 import { TeamFlagComponent } from './team-flag.component';
 
 @Component({
@@ -42,9 +53,25 @@ import { TeamFlagComponent } from './team-flag.component';
                         class="mt-2 px-3 py-1 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
                     >
                         @if (isSaving()) {
-                            <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                            <svg
+                                class="animate-spin h-3.5 w-3.5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    class="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    stroke-width="4"
+                                />
+                                <path
+                                    class="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                />
                             </svg>
                             Guardando...
                         } @else {
@@ -109,8 +136,7 @@ export class PredictionFormComponent {
             return true;
         }
         // Has existing prediction - show save only if changed
-        return this.homeScore() !== pred.predicted_home_score || 
-               this.awayScore() !== pred.predicted_away_score;
+        return this.homeScore() !== pred.predicted_home_score || this.awayScore() !== pred.predicted_away_score;
     });
 
     constructor() {
@@ -130,13 +156,13 @@ export class PredictionFormComponent {
     }
 
     onHomeScoreChange(event: Event): void {
-        const value = parseInt((event.target as HTMLInputElement).value, 10);
-        this.homeScore.set(isNaN(value) ? 0 : Math.max(0, Math.min(20, value)));
+        const value = Number.parseInt((event.target as HTMLInputElement).value, 10);
+        this.homeScore.set(Number.isNaN(value) ? 0 : Math.max(0, Math.min(20, value)));
     }
 
     onAwayScoreChange(event: Event): void {
-        const value = parseInt((event.target as HTMLInputElement).value, 10);
-        this.awayScore.set(isNaN(value) ? 0 : Math.max(0, Math.min(20, value)));
+        const value = Number.parseInt((event.target as HTMLInputElement).value, 10);
+        this.awayScore.set(Number.isNaN(value) ? 0 : Math.max(0, Math.min(20, value)));
     }
 
     savePrediction(): void {

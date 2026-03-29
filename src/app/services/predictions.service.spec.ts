@@ -1,8 +1,12 @@
+import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import { signal } from '@angular/core';
 import { PredictionsService } from './predictions.service';
+import { SupabaseService } from './supabase.service';
 import { PredictionWithMatch } from '../models';
 
-const supabaseStub: any = { client: {}, currentUser: () => null };
+setupTestBed({ zoneless: false });
 
 function makePrediction(points: number): PredictionWithMatch {
   return {
@@ -20,11 +24,23 @@ describe('PredictionsService — stat helpers', () => {
   let service: PredictionsService;
 
   beforeEach(() => {
-    service = new PredictionsService(supabaseStub);
+    TestBed.configureTestingModule({
+      providers: [
+        PredictionsService,
+        {
+          provide: SupabaseService,
+          useValue: {
+            client: {},
+            currentUser: signal(null),
+          },
+        },
+      ],
+    });
+    service = TestBed.inject(PredictionsService);
   });
 
   it('getTotalPoints sums all points_earned', () => {
-    service.predictions.set([
+    service.userPredictionsResource.set([
       makePrediction(3),
       makePrediction(1),
       makePrediction(0),
@@ -34,7 +50,7 @@ describe('PredictionsService — stat helpers', () => {
   });
 
   it('getExactPredictions counts predictions with 3 points', () => {
-    service.predictions.set([
+    service.userPredictionsResource.set([
       makePrediction(3),
       makePrediction(3),
       makePrediction(1),
@@ -44,7 +60,7 @@ describe('PredictionsService — stat helpers', () => {
   });
 
   it('getCorrectOutcomes counts predictions with 1 point', () => {
-    service.predictions.set([
+    service.userPredictionsResource.set([
       makePrediction(3),
       makePrediction(1),
       makePrediction(1),
@@ -54,7 +70,7 @@ describe('PredictionsService — stat helpers', () => {
   });
 
   it('getWrongPredictions counts completed matches with 0 points', () => {
-    service.predictions.set([
+    service.userPredictionsResource.set([
       makePrediction(0), // completed, 0 pts → wrong
       makePrediction(0), // completed, 0 pts → wrong
       makePrediction(3), // exact → not wrong
@@ -64,7 +80,7 @@ describe('PredictionsService — stat helpers', () => {
   });
 
   it('returns zeros when predictions list is empty', () => {
-    service.predictions.set([]);
+    service.userPredictionsResource.set([]);
     expect(service.getTotalPoints()).toBe(0);
     expect(service.getExactPredictions()).toBe(0);
     expect(service.getCorrectOutcomes()).toBe(0);

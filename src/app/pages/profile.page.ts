@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -103,7 +109,7 @@ import { SupabaseService } from '../services/supabase.service';
         </div>
     `,
 })
-export class ProfilePageComponent implements OnInit {
+export class ProfilePageComponent {
     authService = inject(AuthService);
     supabaseService = inject(SupabaseService);
     predictionsService = inject(PredictionsService);
@@ -114,12 +120,13 @@ export class ProfilePageComponent implements OnInit {
     saveMessage = signal('');
     saveError = signal(false);
 
-    stats = signal({
-        totalPoints: 0,
-        exactPredictions: 0,
-        correctOutcomes: 0,
-        totalPredictions: 0,
-    });
+    /** Derive stats reactively from the predictions resource. */
+    stats = computed(() => ({
+        totalPoints: this.predictionsService.getTotalPoints(),
+        exactPredictions: this.predictionsService.getExactPredictions(),
+        correctOutcomes: this.predictionsService.getCorrectOutcomes(),
+        totalPredictions: this.predictionsService.predictions().length,
+    }));
 
     userName = () => {
         const user = this.supabaseService.currentUser();
@@ -142,22 +149,15 @@ export class ProfilePageComponent implements OnInit {
         return name ? name.charAt(0).toUpperCase() : 'U';
     };
 
-    async ngOnInit(): Promise<void> {
-        const profile = await this.authService.loadProfile();
+    /** Sync editUsername from the profile resource whenever it changes. */
+    private editUsernameSync = effect(() => {
+        const profile = this.authService.currentProfile();
         if (profile?.username) {
             this.editUsername = profile.username;
         } else {
             this.editUsername = this.userName();
         }
-
-        await this.predictionsService.loadUserPredictions();
-        this.stats.set({
-            totalPoints: this.predictionsService.getTotalPoints(),
-            exactPredictions: this.predictionsService.getExactPredictions(),
-            correctOutcomes: this.predictionsService.getCorrectOutcomes(),
-            totalPredictions: this.predictionsService.predictions().length,
-        });
-    }
+    });
 
     async updateUsername(): Promise<void> {
         if (!this.editUsername.trim()) return;

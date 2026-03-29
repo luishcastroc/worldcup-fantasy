@@ -7,8 +7,9 @@ import viteTsConfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  publicDir: 'src/public',
 
-  plugins: [angular(), viteTsConfigPaths()],
+  plugins: [angular({ liveReload: true }), viteTsConfigPaths()],
 
   test: {
     globals: true,

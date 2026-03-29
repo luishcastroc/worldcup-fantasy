@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { computed, inject, Injectable, resource, ResourceRef, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { Prediction, PredictionInput, PredictionWithMatch } from '../models';
 import { environment } from '../../environments/environment';
@@ -7,10 +7,11 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class PredictionsService {
-  predictions = signal<PredictionWithMatch[]>([]);
-  isLoading = signal<boolean>(false);
-  error = signal<string | null>(null);
-  
+  private supabase = inject(SupabaseService);
+
+  /** Internal reload trigger — increment to force resources to refetch. */
+  private reloadTrigger = signal(0);
+
   // Check if predictions are still allowed
   isPredictionOpen = computed(() => {
     const deadline = new Date(environment.predictionDeadline);
@@ -19,16 +20,15 @@ export class PredictionsService {
 
   deadlineDate = computed(() => new Date(environment.predictionDeadline));
 
-  constructor(private supabase: SupabaseService) {}
+  /** Resource that loads user predictions with full match+team joins. */
+  userPredictionsResource: ResourceRef<PredictionWithMatch[]> = resource({
+    params: () => ({
+      userId: this.supabase.currentUser()?.id,
+      _reload: this.reloadTrigger(),
+    }),
+    loader: async ({ params }) => {
+      if (!params.userId) return [];
 
-  async loadUserPredictions(): Promise<PredictionWithMatch[]> {
-    const user = this.supabase.currentUser();
-    if (!user) return [];
-
-    this.isLoading.set(true);
-    this.error.set(null);
-
-    try {
       const { data, error } = await this.supabase.client
         .from('predictions')
         .select(`
@@ -39,22 +39,45 @@ export class PredictionsService {
             away_team:teams!matches_away_team_id_fkey(*)
           )
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', params.userId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading predictions:', error);
-        this.error.set('Failed to load predictions');
-        throw error;
-      }
+      if (error) throw error;
+      return (data || []) as PredictionWithMatch[];
+    },
+    defaultValue: [],
+  });
 
-      const predictions = (data || []) as PredictionWithMatch[];
-      this.predictions.set(predictions);
-      return predictions;
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
+  /** Resource that loads user predictions as a Map<matchId, Prediction>. */
+  userPredictionsMapResource: ResourceRef<Map<number, Prediction>> = resource({
+    params: () => ({
+      userId: this.supabase.currentUser()?.id,
+      _reload: this.reloadTrigger(),
+    }),
+    loader: async ({ params }) => {
+      if (!params.userId) return new Map<number, Prediction>();
+
+      const { data, error } = await this.supabase.client
+        .from('predictions')
+        .select('*')
+        .eq('user_id', params.userId);
+
+      if (error) throw error;
+
+      const map = new Map<number, Prediction>();
+      (data || []).forEach((p: Prediction) => {
+        map.set(p.match_id, p);
+      });
+      return map;
+    },
+    defaultValue: new Map<number, Prediction>(),
+  });
+
+  // Convenience computed signals (backward-compatible API)
+  predictions = computed(() => this.userPredictionsResource.value());
+  predictionsMap = computed(() => this.userPredictionsMapResource.value());
+  isLoading = computed(() => this.userPredictionsResource.isLoading());
+  error = signal<string | null>(null);
 
   async getPredictionByMatchId(matchId: number): Promise<Prediction | null> {
     const user = this.supabase.currentUser();
@@ -76,26 +99,7 @@ export class PredictionsService {
     return data;
   }
 
-  async getUserPredictionsMap(): Promise<Map<number, Prediction>> {
-    const user = this.supabase.currentUser();
-    if (!user) return new Map();
-
-    const { data, error } = await this.supabase.client
-      .from('predictions')
-      .select('*')
-      .eq('user_id', user.id);
-
-    if (error) {
-      console.error('Error loading predictions map:', error);
-      return new Map();
-    }
-
-    const map = new Map<number, Prediction>();
-    (data || []).forEach((p: Prediction) => {
-      map.set(p.match_id, p);
-    });
-    return map;
-  }
+  // Mutations stay imperative — resource() is for reads only
 
   async savePrediction(input: PredictionInput): Promise<Prediction | null> {
     if (!this.isPredictionOpen()) {
@@ -109,7 +113,6 @@ export class PredictionsService {
       return null;
     }
 
-    this.isLoading.set(true);
     this.error.set(null);
 
     try {
@@ -135,8 +138,8 @@ export class PredictionsService {
           throw error;
         }
 
-        // Update local state
-        await this.loadUserPredictions();
+        // Reload resources to refresh data
+        this.reloadTrigger.update(v => v + 1);
         return data;
       } else {
         // Create new prediction
@@ -157,12 +160,12 @@ export class PredictionsService {
           throw error;
         }
 
-        // Update local state
-        await this.loadUserPredictions();
+        // Reload resources to refresh data
+        this.reloadTrigger.update(v => v + 1);
         return data;
       }
-    } finally {
-      this.isLoading.set(false);
+    } catch {
+      return null;
     }
   }
 
@@ -186,8 +189,8 @@ export class PredictionsService {
       return false;
     }
 
-    // Update local state
-    await this.loadUserPredictions();
+    // Reload resources to refresh data
+    this.reloadTrigger.update(v => v + 1);
     return true;
   }
 

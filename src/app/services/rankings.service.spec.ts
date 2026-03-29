@@ -1,8 +1,12 @@
+import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import { signal } from '@angular/core';
 import { RankingsService } from './rankings.service';
+import { SupabaseService } from './supabase.service';
 import { UserRanking } from '../models';
 
-const supabaseStub: any = { client: {}, currentUser: () => null };
+setupTestBed({ zoneless: false });
 
 function makeRanking(overrides: Partial<UserRanking>): UserRanking {
   return {
@@ -23,7 +27,19 @@ describe('RankingsService', () => {
   let service: RankingsService;
 
   beforeEach(() => {
-    service = new RankingsService(supabaseStub);
+    TestBed.configureTestingModule({
+      providers: [
+        RankingsService,
+        {
+          provide: SupabaseService,
+          useValue: {
+            client: {},
+            currentUser: signal(null),
+          },
+        },
+      ],
+    });
+    service = TestBed.inject(RankingsService);
   });
 
   describe('getTopRankings', () => {
@@ -31,7 +47,7 @@ describe('RankingsService', () => {
       const rankings = Array.from({ length: 15 }, (_, i) =>
         makeRanking({ user_id: `u${i}`, rank: i + 1, total_points: 15 - i })
       );
-      service.rankings.set(rankings);
+      service.rankingsResource.set(rankings);
 
       expect(service.getTopRankings(10)).toHaveLength(10);
     });
@@ -40,20 +56,20 @@ describe('RankingsService', () => {
       const rankings = Array.from({ length: 20 }, (_, i) =>
         makeRanking({ user_id: `u${i}`, rank: i + 1 })
       );
-      service.rankings.set(rankings);
+      service.rankingsResource.set(rankings);
 
       expect(service.getTopRankings()).toHaveLength(10);
     });
 
     it('returns all entries when fewer than limit', () => {
-      service.rankings.set([makeRanking({ user_id: 'u1' }), makeRanking({ user_id: 'u2' })]);
+      service.rankingsResource.set([makeRanking({ user_id: 'u1' }), makeRanking({ user_id: 'u2' })]);
       expect(service.getTopRankings(10)).toHaveLength(2);
     });
   });
 
   describe('searchRankings', () => {
     beforeEach(() => {
-      service.rankings.set([
+      service.rankingsResource.set([
         makeRanking({ user_id: 'u1', username: 'Alice' }),
         makeRanking({ user_id: 'u2', username: 'Bob' }),
         makeRanking({ user_id: 'u3', username: 'alicia' }),
@@ -82,7 +98,7 @@ describe('RankingsService', () => {
         makeRanking({ user_id: 'u2', username: 'B', total_points: 7, rank: 2 }),
         makeRanking({ user_id: 'u3', username: 'C', total_points: 4, rank: 3 }),
       ];
-      service.rankings.set(rankings);
+      service.rankingsResource.set(rankings);
       const top = service.getTopRankings(3);
       expect(top[0].username).toBe('A');
       expect(top[1].username).toBe('B');
@@ -90,12 +106,11 @@ describe('RankingsService', () => {
     });
 
     it('on equal points, more exact_predictions ranks higher', () => {
-      // Both players have 10 points but different exact counts
       const rankings = [
         makeRanking({ user_id: 'u1', username: 'MoreExact', total_points: 10, exact_predictions: 3, rank: 1 }),
         makeRanking({ user_id: 'u2', username: 'LessExact', total_points: 10, exact_predictions: 1, rank: 2 }),
       ];
-      service.rankings.set(rankings);
+      service.rankingsResource.set(rankings);
       const top = service.getTopRankings(2);
       expect(top[0].username).toBe('MoreExact');
       expect(top[1].username).toBe('LessExact');
@@ -106,7 +121,7 @@ describe('RankingsService', () => {
         makeRanking({ user_id: 'u1', username: 'HighGoals', total_points: 10, exact_predictions: 2, exact_with_goals: 7, rank: 1 }),
         makeRanking({ user_id: 'u2', username: 'LowGoals',  total_points: 10, exact_predictions: 2, exact_with_goals: 3, rank: 2 }),
       ];
-      service.rankings.set(rankings);
+      service.rankingsResource.set(rankings);
       const top = service.getTopRankings(2);
       expect(top[0].username).toBe('HighGoals');
       expect(top[1].username).toBe('LowGoals');

@@ -10,53 +10,30 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@analogjs/vite-plugin-angular:vite",
           "options": {
+            "configFile": "vite.config.mts",
+            "main": "src/main.ts",
             "outputPath": "dist/worldcup-fantasy",
-            "index": "src/index.html",
-            "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
-            "tsConfig": "tsconfig.app.json",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "src/public",
-                "output": "/"
-              }
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "scripts": []
+            "tsConfig": "tsconfig.app.json"
           },
           "configurations": {
             "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1.5MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
-              "outputHashing": "all"
+              "sourcemap": false,
+              "mode": "production"
             },
             "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true
+              "mode": "development"
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
+          "builder": "@analogjs/vite-plugin-angular:vite-dev-server",
+          "options": {
+            "buildTarget": "worldcup-fantasy:build",
+            "port": 4200
+          },
           "configurations": {
             "production": {
               "buildTarget": "worldcup-fantasy:build:production"

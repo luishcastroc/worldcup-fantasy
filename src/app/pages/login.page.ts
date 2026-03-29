@@ -1,4 +1,7 @@
-import { Component, inject } from '@angular/core';
+import {
+  Component,
+  inject,
+} from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../services/auth.service';
@@ -166,9 +169,9 @@ import { SupabaseService } from '../services/supabase.service';
     `,
 })
 export class LoginPageComponent {
-    private authService = inject(AuthService);
-    private supabaseService = inject(SupabaseService);
-    private router = inject(Router);
+    private readonly authService = inject(AuthService);
+    private readonly supabaseService = inject(SupabaseService);
+    private readonly router = inject(Router);
 
     isLoading = false;
 

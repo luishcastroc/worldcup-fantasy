@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, resource, ResourceRef } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { UserRanking } from '../models';
 
@@ -6,52 +6,47 @@ import { UserRanking } from '../models';
   providedIn: 'root',
 })
 export class RankingsService {
-  rankings = signal<UserRanking[]>([]);
-  isLoading = signal<boolean>(false);
-  error = signal<string | null>(null);
+  private supabase = inject(SupabaseService);
 
-  constructor(private supabase: SupabaseService) {}
-
-  async loadRankings(): Promise<UserRanking[]> {
-    this.isLoading.set(true);
-    this.error.set(null);
-
-    try {
+  /** Resource that loads all user rankings, ordered by rank. */
+  rankingsResource: ResourceRef<UserRanking[]> = resource({
+    loader: async () => {
       const { data, error } = await this.supabase.client
         .from('user_rankings')
         .select('*')
         .order('rank', { ascending: true });
 
-      if (error) {
-        console.error('Error loading rankings:', error);
-        this.error.set('Failed to load rankings');
-        throw error;
-      }
+      if (error) throw error;
+      return (data || []) as UserRanking[];
+    },
+    defaultValue: [],
+  });
 
-      this.rankings.set(data || []);
-      return data || [];
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
+  /** Resource that loads the current user's ranking. Reacts to user changes. */
+  currentUserRankingResource: ResourceRef<UserRanking | null> = resource({
+    params: () => ({ userId: this.supabase.currentUser()?.id }),
+    loader: async ({ params }) => {
+      if (!params.userId) return null;
 
-  async getCurrentUserRanking(): Promise<UserRanking | null> {
-    const user = this.supabase.currentUser();
-    if (!user) return null;
+      const { data, error } = await this.supabase.client
+        .from('user_rankings')
+        .select('*')
+        .eq('user_id', params.userId)
+        .single();
 
-    const { data, error } = await this.supabase.client
-      .from('user_rankings')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      return (data as UserRanking) ?? null;
+    },
+    defaultValue: null,
+  });
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error getting user ranking:', error);
-      return null;
-    }
-
-    return data;
-  }
+  // Convenience computed signals (backward-compatible API)
+  rankings = computed(() => this.rankingsResource.value());
+  isLoading = computed(() => this.rankingsResource.isLoading());
+  error = computed<string | null>(() => {
+    const err = this.rankingsResource.error();
+    return err ? err.message ?? 'Failed to load rankings' : null;
+  });
 
   getTopRankings(limit: number = 10): UserRanking[] {
     return this.rankings().slice(0, limit);

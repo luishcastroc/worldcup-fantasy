@@ -1,7 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
@@ -17,11 +20,14 @@ import { SupabaseService } from '../../services/supabase.service';
     `,
 })
 export class AuthCallbackPageComponent implements OnInit {
-    private supabase = inject(SupabaseService);
-    private authService = inject(AuthService);
-    private router = inject(Router);
+    private readonly supabase = inject(SupabaseService);
+    private readonly router = inject(Router);
 
-    async ngOnInit(): Promise<void> {
+    ngOnInit(): void {
+        this.handleAuthCallback();
+    }
+
+    private async handleAuthCallback(): Promise<void> {
         try {
             // Supabase will automatically pick up the hash fragment and set the session
             // We just need to wait for it to process
@@ -34,8 +40,7 @@ export class AuthCallbackPageComponent implements OnInit {
             }
 
             if (data.session) {
-                // Load user profile
-                await this.authService.loadProfile();
+                // Profile resource auto-loads when user signal changes
                 this.router.navigate(['/matches']);
             } else {
                 // No session, redirect to login

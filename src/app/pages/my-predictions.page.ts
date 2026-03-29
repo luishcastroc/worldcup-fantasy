@@ -1,5 +1,9 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { TeamFlagComponent } from '../components/team-flag.component';
@@ -121,7 +125,7 @@ import { PredictionsService } from '../services/predictions.service';
                                                     {{ prediction.match.away_score }}
                                                 </span>
                                             } @else if (prediction.match.status === 'in_progress') {
-                                            <span class="badge badge-warning">En Vivo</span>
+                                                <span class="badge badge-warning">En Vivo</span>
                                             } @else {
                                                 <span class="text-gray-400">-</span>
                                             }
@@ -178,7 +182,7 @@ import { PredictionsService } from '../services/predictions.service';
         </div>
     `,
 })
-export class MyPredictionsPageComponent implements OnInit {
+export class MyPredictionsPageComponent {
     predictionsService = inject(PredictionsService);
 
     predictions = computed(() => this.predictionsService.predictions());
@@ -187,8 +191,4 @@ export class MyPredictionsPageComponent implements OnInit {
     correctOutcomes = computed(() => this.predictionsService.getCorrectOutcomes());
     wrongPredictions = computed(() => this.predictionsService.getWrongPredictions());
     totalPredictions = computed(() => this.predictions().length);
-
-    async ngOnInit(): Promise<void> {
-        await this.predictionsService.loadUserPredictions();
-    }
 }

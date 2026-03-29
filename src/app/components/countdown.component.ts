@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, input, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  input,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 
 @Component({
     selector: 'app-countdown',
@@ -66,7 +73,7 @@ export class CountdownComponent implements OnInit, OnDestroy {
     }
 
     private updateCountdown(): void {
-        const now = new Date().getTime();
+        const now = Date.now();
         const target = this.deadline().getTime();
         const diff = target - now;
 

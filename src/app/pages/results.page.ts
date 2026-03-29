@@ -1,5 +1,10 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { TeamFlagComponent } from '../components/team-flag.component';
 import { Prediction } from '../models';
@@ -131,7 +136,9 @@ import { PredictionsService } from '../services/predictions.service';
                                                             clip-rule="evenodd"
                                                         />
                                                     </svg>
-                                                    <span class="text-sm font-semibold text-green-700">¡Exacto! +3</span>
+                                                    <span class="text-sm font-semibold text-green-700"
+                                                        >¡Exacto! +3</span
+                                                    >
                                                 } @else if (prediction.points_earned === 1) {
                                                     <svg
                                                         class="w-5 h-5 text-green-600"
@@ -217,12 +224,11 @@ import { PredictionsService } from '../services/predictions.service';
         </div>
     `,
 })
-export class ResultsPageComponent implements OnInit {
+export class ResultsPageComponent {
     matchesService = inject(MatchesService);
     predictionsService = inject(PredictionsService);
 
     selectedGroup = signal<string | null>(null);
-    predictionsMap = signal<Map<number, Prediction>>(new Map());
 
     groups = computed(() => this.matchesService.getGroupLetters());
 
@@ -235,16 +241,7 @@ export class ResultsPageComponent implements OnInit {
         return matches.filter(m => m.group_letter === group);
     });
 
-    async ngOnInit(): Promise<void> {
-        await Promise.all([this.matchesService.loadMatches(), this.loadPredictions()]);
-    }
-
-    private async loadPredictions(): Promise<void> {
-        const map = await this.predictionsService.getUserPredictionsMap();
-        this.predictionsMap.set(map);
-    }
-
     getPrediction(matchId: number): Prediction | null {
-        return this.predictionsMap().get(matchId) || null;
+        return this.predictionsService.predictionsMap().get(matchId) || null;
     }
 }
