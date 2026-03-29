@@ -2,6 +2,7 @@
 
 import { defineConfig } from 'vite';
 import angular from '@analogjs/vite-plugin-angular';
+import tailwindcss from '@tailwindcss/vite';
 import viteTsConfigPaths from 'vite-tsconfig-paths';
 
 
@@ -9,7 +10,7 @@ import viteTsConfigPaths from 'vite-tsconfig-paths';
 export default defineConfig(({ mode }) => ({
   publicDir: 'src/public',
 
-  plugins: [angular({ liveReload: true }), viteTsConfigPaths()],
+  plugins: [angular({ liveReload: true }), tailwindcss(), viteTsConfigPaths()],
 
   test: {
     globals: true,

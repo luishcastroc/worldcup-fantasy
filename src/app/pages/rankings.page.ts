@@ -5,7 +5,6 @@ import {
   signal,
 } from '@angular/core';
 
-import { UserRanking } from '../models';
 import { RankingsService } from '../services/rankings.service';
 import { SupabaseService } from '../services/supabase.service';
 
@@ -22,7 +21,7 @@ import { SupabaseService } from '../services/supabase.service';
 
             <!-- Current User Position -->
             @if (currentUserRanking(); as ranking) {
-                <div class="card bg-gradient-to-r from-primary-500 to-primary-600 text-white p-6 mb-6">
+                <div class="card bg-linear-to-r from-primary-500 to-primary-600 text-white p-6 mb-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">

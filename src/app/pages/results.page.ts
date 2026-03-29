@@ -28,7 +28,7 @@ import { PredictionsService } from '../services/predictions.service';
                 <button
                     (click)="selectedGroup.set(null)"
                     [class]="selectedGroup() === null ? 'btn-primary' : 'btn-secondary'"
-                    class="!py-2 !px-4 text-sm"
+                    class="py-2! px-4! text-sm"
                 >
                     Todos los Grupos
                 </button>
@@ -36,7 +36,7 @@ import { PredictionsService } from '../services/predictions.service';
                     <button
                         (click)="selectedGroup.set(group)"
                         [class]="selectedGroup() === group ? 'btn-primary' : 'btn-secondary'"
-                        class="!py-2 !px-4 text-sm"
+                        class="py-2! px-4! text-sm"
                     >
                         Grupo {{ group }}
                     </button>

@@ -12,7 +12,7 @@ import { SupabaseService } from '../services/supabase.service';
     standalone: true,
     template: `
         <div
-            class="min-h-screen bg-gradient-to-br from-fifa-dark via-primary-900 to-fifa-dark flex items-center justify-center px-4"
+            class="min-h-screen bg-linear-to-br from-fifa-dark via-primary-900 to-fifa-dark flex items-center justify-center px-4"
         >
             <div class="max-w-md w-full">
                 <!-- Logo and Title -->
