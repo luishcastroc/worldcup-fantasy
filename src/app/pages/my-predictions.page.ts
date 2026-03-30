@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -33,7 +34,7 @@ import { PredictionsService } from '../services/predictions.service';
                 </div>
                 <div class="card p-4 text-center">
                     <p class="text-3xl font-bold text-blue-600">{{ correctOutcomes() }}</p>
-                    <p class="text-sm text-gray-500">Acertados</p>
+                    <p class="text-sm text-gray-500">Solo Resultado</p>
                 </div>
                 <div class="card p-4 text-center">
                     <p class="text-3xl font-bold text-red-600">{{ wrongPredictions() }}</p>
@@ -182,10 +183,17 @@ import { PredictionsService } from '../services/predictions.service';
         </div>
     `,
 })
-export class MyPredictionsPageComponent {
+export class MyPredictionsPageComponent implements OnInit {
     predictionsService = inject(PredictionsService);
 
-    predictions = computed(() => this.predictionsService.predictions());
+    ngOnInit(): void {
+        // Always fetch fresh data when navigating to this page
+        this.predictionsService.reload();
+    }
+
+    predictions = computed(() =>
+        [...this.predictionsService.predictions()].sort((a, b) => a.match_id - b.match_id)
+    );
     totalPoints = computed(() => this.predictionsService.getTotalPoints());
     exactPredictions = computed(() => this.predictionsService.getExactPredictions());
     correctOutcomes = computed(() => this.predictionsService.getCorrectOutcomes());

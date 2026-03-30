@@ -3,6 +3,7 @@ import {
   computed,
   inject,
   linkedSignal,
+  OnInit,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -89,7 +90,7 @@ import { SupabaseService } from '../services/supabase.service';
                     </div>
                     <div class="text-center p-4 bg-gray-50 rounded-lg">
                         <p class="text-3xl font-bold text-blue-600">{{ stats().correctOutcomes }}</p>
-                        <p class="text-sm text-gray-500">Resultados Correctos</p>
+                        <p class="text-sm text-gray-500">Solo Resultado</p>
                     </div>
                     <div class="text-center p-4 bg-gray-50 rounded-lg">
                         <p class="text-3xl font-bold text-gray-600">{{ stats().totalPredictions }}</p>
@@ -201,12 +202,17 @@ import { SupabaseService } from '../services/supabase.service';
         </div>
     `,
 })
-export class ProfilePageComponent {
+export class ProfilePageComponent implements OnInit {
     authService = inject(AuthService);
     supabaseService = inject(SupabaseService);
     predictionsService = inject(PredictionsService);
     router = inject(Router);
     protected readonly inviteService = inject(InviteService);
+
+    ngOnInit(): void {
+        // Always fetch fresh data when navigating to this page
+        this.predictionsService.reload();
+    }
 
     isGeneratingInvite = signal(false);
     inviteError = signal('');

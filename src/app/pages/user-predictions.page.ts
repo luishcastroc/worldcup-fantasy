@@ -76,7 +76,7 @@ import { PredictionWithMatch, UserRanking } from '../models';
                     </div>
                     <div class="card p-4 text-center">
                         <p class="text-3xl font-bold text-blue-600">{{ correctOutcomes() }}</p>
-                        <p class="text-sm text-gray-500">Acertados</p>
+                        <p class="text-sm text-gray-500">Solo Resultado</p>
                     </div>
                     <div class="card p-4 text-center">
                         <p class="text-3xl font-bold text-red-600">{{ wrongPredictions() }}</p>

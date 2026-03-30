@@ -47,7 +47,7 @@ import { SupabaseService } from '../services/supabase.service';
                         </div>
                         <div class="text-center">
                             <p class="text-2xl font-bold">{{ ranking.correct_outcomes }}</p>
-                            <p class="text-xs text-primary-100">Acertados</p>
+                            <p class="text-xs text-primary-100">Solo Resultado</p>
                         </div>
                         <div class="text-center">
                             <p class="text-2xl font-bold">{{ ranking.total_predictions }}</p>
@@ -103,7 +103,7 @@ import { SupabaseService } from '../services/supabase.service';
                                     <th
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell"
                                     >
-                                        Acertados
+                                        Solo Resultado
                                     </th>
                                     <th
                                         class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell"
