@@ -1,16 +1,22 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
+import { MatchWithTeams } from '../../models';
+import { TeamFlagComponent } from '../../components/team-flag.component';
 import { MatchesService } from '../../services/matches.service';
 import { PredictionsService } from '../../services/predictions.service';
-import { MatchWithTeams } from '../../models';
 
 @Component({
     selector: 'app-admin-matches-page',
     standalone: true,
-    imports: [FormsModule],
+    imports: [FormsModule, TeamFlagComponent],
     template: `
         <div class="space-y-4">
-
             <!-- Header bar -->
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-3">
@@ -50,7 +56,8 @@ import { MatchWithTeams } from '../../models';
                 <div class="border-l-4 border-red-500 bg-red-50 rounded p-4">
                     <p class="text-sm font-medium text-red-800 mb-1">¿Estás seguro?</p>
                     <p class="text-sm text-red-700 mb-3">
-                        Se eliminarán todos los resultados y se resetearán los puntos de todas las predicciones. Esta acción no se puede deshacer.
+                        Se eliminarán todos los resultados y se resetearán los puntos de todas las predicciones. Esta
+                        acción no se puede deshacer.
                     </p>
                     <div class="flex gap-2">
                         <button
@@ -61,8 +68,19 @@ import { MatchWithTeams } from '../../models';
                             @if (clearingAll()) {
                                 <span class="flex items-center gap-1">
                                     <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        <circle
+                                            class="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            stroke-width="4"
+                                        ></circle>
+                                        <path
+                                            class="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                        ></path>
                                     </svg>
                                     Limpiando...
                                 </span>
@@ -103,13 +121,41 @@ import { MatchWithTeams } from '../../models';
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grupo</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Local</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Resultado</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitante</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                <th
+                                    class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Grupo
+                                </th>
+                                <th
+                                    class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Fecha
+                                </th>
+                                <th
+                                    class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Local
+                                </th>
+                                <th
+                                    class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Resultado
+                                </th>
+                                <th
+                                    class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Visitante
+                                </th>
+                                <th
+                                    class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Estado
+                                </th>
+                                <th
+                                    class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    Acciones
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -117,7 +163,10 @@ import { MatchWithTeams } from '../../models';
                                 <tr class="hover:bg-gray-50">
                                     <!-- Group -->
                                     <td class="px-3 py-3 text-center">
-                                        <span class="text-xs font-medium text-gray-500 bg-gray-100 rounded px-2 py-0.5">{{ match.group_letter }}</span>
+                                        <span
+                                            class="text-xs font-medium text-gray-500 bg-gray-100 rounded px-2 py-0.5"
+                                            >{{ match.group_letter }}</span
+                                        >
                                     </td>
 
                                     <!-- Date -->
@@ -127,10 +176,14 @@ import { MatchWithTeams } from '../../models';
 
                                     <!-- Home team -->
                                     <td class="px-3 py-3 text-right">
-                                        <span class="font-medium text-gray-900">{{ match.home_team?.name || '—' }}</span>
-                                        @if (match.home_team?.flag_emoji) {
-                                            <span class="ml-1">{{ match.home_team?.flag_emoji }}</span>
-                                        }
+                                        <span class="inline-flex items-center gap-1 justify-end">
+                                            <span class="font-medium text-gray-900">{{ match.home_team.name }}</span>
+                                            <app-team-flag
+                                                [flagUrl]="match.home_team.flag_url"
+                                                [teamCode]="match.home_team.code"
+                                                size="sm"
+                                            />
+                                        </span>
                                     </td>
 
                                     <!-- Result / edit form -->
@@ -156,7 +209,9 @@ import { MatchWithTeams } from '../../models';
                                                 />
                                             </div>
                                         } @else if (match.status === 'completed') {
-                                            <span class="font-bold text-gold-600 text-base">{{ match.home_score }} - {{ match.away_score }}</span>
+                                            <span class="font-bold text-gold-600 text-base"
+                                                >{{ match.home_score }} - {{ match.away_score }}</span
+                                            >
                                         } @else {
                                             <span class="text-gray-400">— vs —</span>
                                         }
@@ -164,15 +219,23 @@ import { MatchWithTeams } from '../../models';
 
                                     <!-- Away team -->
                                     <td class="px-3 py-3">
-                                        @if (match.away_team?.flag_emoji) {
-                                            <span class="mr-1">{{ match.away_team?.flag_emoji }}</span>
-                                        }
-                                        <span class="font-medium text-gray-900">{{ match.away_team?.name || '—' }}</span>
+                                        <span class="inline-flex items-center gap-1">
+                                            <app-team-flag
+                                                [flagUrl]="match.away_team.flag_url"
+                                                [teamCode]="match.away_team.code"
+                                                size="sm"
+                                            />
+                                            <span class="font-medium text-gray-900">{{ match.away_team.name }}</span>
+                                        </span>
                                     </td>
 
                                     <!-- Status badge -->
                                     <td class="px-3 py-3 text-center">
-                                        <span class="text-xs rounded-full px-2 py-0.5 font-medium border {{ statusBadgeClass(match.status) }}">
+                                        <span
+                                            class="text-xs rounded-full px-2 py-0.5 font-medium border {{
+                                                statusBadgeClass(match.status)
+                                            }}"
+                                        >
                                             {{ match.status === 'completed' ? 'Completado' : 'Pendiente' }}
                                         </span>
                                     </td>
@@ -180,7 +243,9 @@ import { MatchWithTeams } from '../../models';
                                     <!-- Actions -->
                                     <td class="px-3 py-3 text-center">
                                         @if (saving() === match.id || clearing() === match.id) {
-                                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600 mx-auto"></div>
+                                            <div
+                                                class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600 mx-auto"
+                                            ></div>
                                         } @else if (editingMatchId() === match.id) {
                                             <div class="flex items-center justify-center gap-1">
                                                 <button
@@ -256,28 +321,28 @@ export class AdminMatchesPageComponent {
     protected readonly matchesService = inject(MatchesService);
     private readonly predictionsService = inject(PredictionsService);
 
-    editingMatchId    = signal<number | null>(null);
-    editHomeScore     = signal<number | null>(null);
-    editAwayScore     = signal<number | null>(null);
+    editingMatchId = signal<number | null>(null);
+    editHomeScore = signal<number | null>(null);
+    editAwayScore = signal<number | null>(null);
 
-    confirmingClearId  = signal<number | null>(null);
+    confirmingClearId = signal<number | null>(null);
     confirmingClearAll = signal(false);
 
-    saving      = signal<number | null>(null);
-    clearing    = signal<number | null>(null);
+    saving = signal<number | null>(null);
+    clearing = signal<number | null>(null);
     clearingAll = signal(false);
 
-    filterGroup  = signal<string>('all');
+    filterGroup = signal<string>('all');
     filterStatus = signal<'all' | 'scheduled' | 'completed'>('all');
 
-    errorMessage   = signal('');
+    errorMessage = signal('');
     successMessage = signal('');
 
     filteredMatches = computed(() => {
         let list = this.matchesService.matches();
-        const group  = this.filterGroup();
+        const group = this.filterGroup();
         const status = this.filterStatus();
-        if (group !== 'all')  list = list.filter(m => m.group_letter === group);
+        if (group !== 'all') list = list.filter(m => m.group_letter === group);
         if (status !== 'all') list = list.filter(m => m.status === status);
         return list;
     });
@@ -299,7 +364,7 @@ export class AdminMatchesPageComponent {
     }
 
     async saveResult(): Promise<void> {
-        const matchId   = this.editingMatchId();
+        const matchId = this.editingMatchId();
         const homeScore = this.editHomeScore();
         const awayScore = this.editAwayScore();
 
@@ -386,8 +451,8 @@ export class AdminMatchesPageComponent {
         const d = new Date(dateStr);
         return d.toLocaleDateString('es-MX', {
             month: 'short',
-            day:   'numeric',
-            hour:  '2-digit',
+            day: 'numeric',
+            hour: '2-digit',
             minute: '2-digit',
         });
     }
@@ -400,10 +465,14 @@ export class AdminMatchesPageComponent {
 
     private rpcErrorMessage(code: string): string {
         switch (code) {
-            case 'not_admin':      return 'No tienes permisos de administrador.';
-            case 'not_found':      return 'El partido no fue encontrado.';
-            case 'invalid_scores': return 'Los marcadores deben ser números válidos (≥ 0).';
-            default:               return `Error inesperado: ${code}`;
+            case 'not_admin':
+                return 'No tienes permisos de administrador.';
+            case 'not_found':
+                return 'El partido no fue encontrado.';
+            case 'invalid_scores':
+                return 'Los marcadores deben ser números válidos (≥ 0).';
+            default:
+                return `Error inesperado: ${code}`;
         }
     }
 
