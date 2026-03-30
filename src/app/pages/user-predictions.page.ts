@@ -213,7 +213,11 @@ export class UserPredictionsPageComponent implements OnInit {
     );
     totalPredictions = computed(() => this.predictions().length);
 
-    async ngOnInit(): Promise<void> {
+    ngOnInit(): void {
+        this.loadUserPredictions();
+    }
+
+    private async loadUserPredictions(): Promise<void> {
         const userId = this.route.snapshot.paramMap.get('userId');
         if (!userId) {
             this.errorMsg.set('Usuario no encontrado');
