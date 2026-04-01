@@ -130,6 +130,21 @@ import { SupabaseService } from '../services/supabase.service';
                                     ¿Ya tienes cuenta? Inicia sesión
                                 </button>
                             </div>
+                        } @else if (emailSent()) {
+                            <!-- STATE 3: Email verification sent -->
+                            <div class="text-center space-y-4">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full">
+                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900">¡Revisa tu correo!</h3>
+                                <p class="text-gray-600 text-sm">
+                                    Te enviamos un enlace de verificación a<br />
+                                    <span class="font-medium text-gray-900">{{ emailAddress }}</span>
+                                </p>
+                                <p class="text-gray-500 text-xs">Haz clic en el enlace del correo para completar tu registro.</p>
+                            </div>
                         } @else {
                             <!-- STATE 2: Provider sign-in (code validated OR returning user) -->
                             <div class="text-center">
@@ -148,7 +163,7 @@ import { SupabaseService } from '../services/supabase.service';
                                         Código válido
                                     </div>
                                     <h3 class="text-xl font-semibold text-gray-900 mb-2">¡Casi listo!</h3>
-                                    <p class="text-gray-600">Inicia sesión para completar tu registro</p>
+                                    <p class="text-gray-600">Elige cómo quieres registrarte</p>
                                 } @else {
                                     <h3 class="text-xl font-semibold text-gray-900 mb-2">¡Bienvenido de vuelta!</h3>
                                     <p class="text-gray-600">Inicia sesión para continuar</p>
@@ -158,7 +173,7 @@ import { SupabaseService } from '../services/supabase.service';
                             <!-- Google Sign In Button -->
                             <button
                                 (click)="signInWithGoogle()"
-                                [disabled]="isSigningIn()"
+                                [disabled]="isSigningIn() || isEmailSubmitting()"
                                 class="btn-google w-full"
                             >
                                 @if (isSigningIn()) {
@@ -201,9 +216,56 @@ import { SupabaseService } from '../services/supabase.service';
                                             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                                         />
                                     </svg>
-                                    <span>Iniciar sesión con Google</span>
+                                    <span>Continuar con Google</span>
                                 }
                             </button>
+
+                            <!-- Divider -->
+                            <div class="relative">
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="w-full border-t border-gray-200"></div>
+                                </div>
+                                <div class="relative flex justify-center text-sm">
+                                    <span class="px-2 bg-white text-gray-500">o continúa con correo</span>
+                                </div>
+                            </div>
+
+                            <!-- Email / Password form -->
+                            <div class="space-y-3">
+                                @if (errorMessage()) {
+                                    <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+                                }
+                                <input
+                                    type="email"
+                                    [(ngModel)]="emailAddress"
+                                    (ngModelChange)="errorMessage.set('')"
+                                    placeholder="Correo electrónico"
+                                    [disabled]="isEmailSubmitting()"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:border-transparent disabled:bg-gray-100"
+                                />
+                                <input
+                                    type="password"
+                                    [(ngModel)]="password"
+                                    (ngModelChange)="errorMessage.set('')"
+                                    (keydown.enter)="submitEmail()"
+                                    placeholder="Contraseña"
+                                    [disabled]="isEmailSubmitting()"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:border-transparent disabled:bg-gray-100"
+                                />
+                                <button
+                                    (click)="submitEmail()"
+                                    [disabled]="isEmailSubmitting() || isSigningIn() || !emailAddress.trim() || !password.trim()"
+                                    class="w-full py-3 px-6 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    @if (isEmailSubmitting()) {
+                                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    }
+                                    <span>{{ codeValidated() ? 'Crear cuenta' : 'Iniciar sesión' }}</span>
+                                </button>
+                            </div>
 
                             <!-- Back link -->
                             @if (returningUser() && !codeValidated()) {
@@ -217,13 +279,6 @@ import { SupabaseService } from '../services/supabase.service';
                                 </div>
                             }
                         }
-
-                        <!-- Divider -->
-                        <div class="relative">
-                            <div class="absolute inset-0 flex items-center">
-                                <div class="w-full border-t border-gray-200"></div>
-                            </div>
-                        </div>
 
                         <!-- Features -->
                         <div class="space-y-3">
@@ -310,10 +365,14 @@ export class LoginPageComponent {
     private readonly router = inject(Router);
 
     inviteCode = '';
+    emailAddress = '';
+    password = '';
     codeValidated = signal(false);
     returningUser = signal(false);
+    emailSent = signal(false);
     isValidating = signal(false);
     isSigningIn = signal(false);
+    isEmailSubmitting = signal(false);
     errorMessage = signal('');
     loginError = signal('');
 
@@ -363,6 +422,45 @@ export class LoginPageComponent {
         } catch (error) {
             console.error('Sign in error:', error);
             this.isSigningIn.set(false);
+        }
+    }
+
+    async submitEmail(): Promise<void> {
+        if (!this.emailAddress.trim() || !this.password.trim()) return;
+
+        this.isEmailSubmitting.set(true);
+        this.errorMessage.set('');
+
+        try {
+            if (this.codeValidated()) {
+                // New user: sign up — invite code stored in metadata for cross-device verification
+                const code = localStorage.getItem('pendingInviteCode') ?? this.inviteCode.trim().toUpperCase();
+                const emailPending = await this.supabaseService.signUpWithPassword(this.emailAddress.trim(), this.password, code);
+                if (emailPending) {
+                    // Confirmations enabled: show "check your email"
+                    this.emailSent.set(true);
+                } else {
+                    // Confirmations disabled: session already created, go through callback
+                    this.router.navigate(['/auth/callback']);
+                }
+            } else {
+                // Returning user: sign in directly
+                await this.supabaseService.signInWithPassword(this.emailAddress.trim(), this.password);
+                this.router.navigate(['/auth/callback']);
+            }
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : '';
+            if (msg.includes('Invalid login credentials')) {
+                this.errorMessage.set('Correo o contraseña incorrectos.');
+            } else if (msg.includes('already registered') || msg.includes('already been registered')) {
+                this.errorMessage.set('Este correo ya está registrado. Inicia sesión directamente.');
+            } else if (msg.includes('Email not confirmed')) {
+                this.errorMessage.set('Debes verificar tu correo antes de iniciar sesión.');
+            } else {
+                this.errorMessage.set('Ocurrió un error. Por favor inténtalo de nuevo.');
+            }
+        } finally {
+            this.isEmailSubmitting.set(false);
         }
     }
 }

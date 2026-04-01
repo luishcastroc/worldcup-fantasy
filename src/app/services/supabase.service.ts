@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
@@ -6,6 +7,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class SupabaseService {
+  private readonly document = inject(DOCUMENT);
   private supabase: SupabaseClient;
   private authInitialized: Promise<void>;
   private resolveAuthInit!: () => void;
@@ -55,7 +57,7 @@ export class SupabaseService {
     const { error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${this.document.location.origin}/auth/callback`,
       },
     });
 
@@ -63,6 +65,30 @@ export class SupabaseService {
       console.error('Error signing in with Google:', error);
       throw error;
     }
+  }
+
+  async signInWithPassword(email: string, password: string): Promise<void> {
+    const { error } = await this.supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  }
+
+  /**
+   * Returns true if a confirmation email was sent (user must verify),
+   * or false if confirmations are disabled and the user is already signed in.
+   */
+  async signUpWithPassword(email: string, password: string, inviteCode: string): Promise<boolean> {
+    const { data, error } = await this.supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { pending_invite_code: inviteCode },
+        emailRedirectTo: `${this.document.location.origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+    // When email confirmations are disabled Supabase returns a session immediately.
+    // When enabled it returns null session and sends a verification email.
+    return data.session === null;
   }
 
   async signOut(): Promise<void> {

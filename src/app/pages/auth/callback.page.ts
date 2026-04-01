@@ -54,12 +54,20 @@ export class AuthCallbackPageComponent implements OnInit {
                 return;
             }
 
+            // Case 1b: Email signup opened on a different device — invite code
+            // stored in user metadata during signUp() as cross-device fallback
+            const metaCode = data.session.user.user_metadata?.['pending_invite_code'] as string | undefined;
+            if (metaCode) {
+                await this.redeemAndNavigate(metaCode);
+                return;
+            }
+
             // Case 2 & 3: No pending invite code — check if this is a
             // returning approved user or a garbage pending user
             await this.auth.waitForProfile();
             const profile = this.auth.currentProfile();
 
-            if (profile && profile.status === 'approved') {
+            if (profile?.status === 'approved') {
                 // Case 2: Returning approved user → go straight in
                 this.router.navigate(['/matches']);
             } else {
