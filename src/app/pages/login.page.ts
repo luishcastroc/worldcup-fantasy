@@ -312,7 +312,7 @@ import { SupabaseService } from '../services/supabase.service';
                                         d="M5 13l4 4L19 7"
                                     />
                                 </svg>
-                                <span>Gana 2 puntos por marcador exacto</span>
+                                <span>Gana 3 puntos por marcador exacto</span>
                             </div>
                             <div class="flex items-center gap-3 text-sm text-gray-600">
                                 <svg
