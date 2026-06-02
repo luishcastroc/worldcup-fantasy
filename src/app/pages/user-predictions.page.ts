@@ -241,7 +241,13 @@ export class UserPredictionsPageComponent implements OnInit {
             }
 
             this.userRanking.set(rankingResult.data as UserRanking | null);
-            this.predictions.set(predictions);
+            this.predictions.set(
+                [...predictions].sort(
+                    (a, b) =>
+                        new Date(a.match.match_date).getTime() -
+                        new Date(b.match.match_date).getTime()
+                )
+            );
         } catch (err: any) {
             console.error('Error loading user predictions:', err);
             this.errorMsg.set('Error al cargar las predicciones');

@@ -192,7 +192,10 @@ export class MyPredictionsPageComponent implements OnInit {
     }
 
     predictions = computed(() =>
-        [...this.predictionsService.predictions()].sort((a, b) => a.match_id - b.match_id)
+        [...this.predictionsService.predictions()].sort(
+            (a, b) =>
+                new Date(a.match.match_date).getTime() - new Date(b.match.match_date).getTime()
+        )
     );
     totalPoints = computed(() => this.predictionsService.getTotalPoints());
     exactPredictions = computed(() => this.predictionsService.getExactPredictions());
