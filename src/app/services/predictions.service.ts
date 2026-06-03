@@ -99,6 +99,27 @@ export class PredictionsService {
     return data;
   }
 
+  /**
+   * A match is open for predictions only while it is scheduled, in the future,
+   * and has no result. Mirrors the per-match RLS lock in migration 011.
+   */
+  async isMatchOpen(matchId: number): Promise<boolean> {
+    const { data, error } = await this.supabase.client
+      .from('matches')
+      .select('match_date, status, home_score, away_score')
+      .eq('id', matchId)
+      .single();
+
+    if (error || !data) return false;
+
+    return (
+      data.status === 'scheduled' &&
+      data.home_score === null &&
+      data.away_score === null &&
+      new Date(data.match_date) > new Date()
+    );
+  }
+
   // Mutations stay imperative — resource() is for reads only
 
   async savePrediction(input: PredictionInput): Promise<Prediction | null> {
@@ -114,6 +135,13 @@ export class PredictionsService {
     }
 
     this.error.set(null);
+
+    // Per-match lock: reject once the match has started or has a result.
+    // The database enforces this too (migration 011); this gives a clear message.
+    if (!(await this.isMatchOpen(input.match_id))) {
+      this.error.set('This match is locked — it has already started or has a result.');
+      return null;
+    }
 
     try {
       // Check if prediction exists

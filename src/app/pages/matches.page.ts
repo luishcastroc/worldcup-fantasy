@@ -8,6 +8,7 @@ import {
 import { CountdownComponent } from '../components/countdown.component';
 import { MatchCardComponent } from '../components/match-card.component';
 import {
+  MatchWithTeams,
   Prediction,
   PredictionInput,
 } from '../models';
@@ -94,7 +95,7 @@ import { PredictionsService } from '../services/predictions.service';
                         <app-match-card
                             [match]="match"
                             [prediction]="getPrediction(match.id)"
-                            [canPredict]="predictionsService.isPredictionOpen()"
+                            [canPredict]="canPredictMatch(match)"
                             [showPrediction]="true"
                             (savePrediction)="onSavePrediction($event)"
                         />
@@ -141,6 +142,18 @@ export class MatchesPageComponent {
 
     getPrediction(matchId: number): Prediction | null {
         return this.predictionsService.predictionsMap().get(matchId) || null;
+    }
+
+    /**
+     * A match is editable only while the global deadline is open AND the match
+     * itself is still open: not yet started and without an admin-entered result.
+     * Mirrors the per-match RLS lock in migration 011.
+     */
+    canPredictMatch(match: MatchWithTeams): boolean {
+        if (!this.predictionsService.isPredictionOpen()) return false;
+        if (match.status !== 'scheduled') return false;
+        if (match.home_score !== null && match.away_score !== null) return false;
+        return new Date(match.match_date) > new Date();
     }
 
     async onSavePrediction(input: PredictionInput): Promise<void> {
