@@ -8,10 +8,12 @@ import {
 
 import { Profile } from '../../models';
 import { SupabaseService } from '../../services/supabase.service';
+import { AvatarThumbPipe } from '../../pipes/avatar-thumb.pipe';
 
 @Component({
     selector: 'app-admin-users-page',
     standalone: true,
+    imports: [AvatarThumbPipe],
     template: `
         <div class="space-y-4">
             @if (profilesResource.isLoading()) {
@@ -63,9 +65,9 @@ import { SupabaseService } from '../../services/supabase.service';
                                         <div class="flex items-center gap-3">
                                             @if (profile.avatar_url) {
                                                 <img
-                                                    [src]="profile.avatar_url"
+                                                    [src]="profile.avatar_url | avatarThumb: 32"
                                                     [alt]="profile.username"
-                                                    class="w-8 h-8 rounded-full"
+                                                    class="w-8 h-8 rounded-full object-cover"
                                                 />
                                             } @else {
                                                 <div

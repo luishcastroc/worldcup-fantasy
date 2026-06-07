@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../services/auth.service';
+import { AvatarThumbPipe } from '../pipes/avatar-thumb.pipe';
 import { AvatarValidationError, CloudinaryService } from '../services/cloudinary.service';
 import { InviteService } from '../services/invite.service';
 import { PredictionsService } from '../services/predictions.service';
@@ -18,7 +19,7 @@ import { SupabaseService } from '../services/supabase.service';
 @Component({
     selector: 'app-profile-page',
     standalone: true,
-    imports: [FormsModule],
+    imports: [FormsModule, AvatarThumbPipe],
     template: `
         <div class="max-w-2xl mx-auto px-4 py-6">
             <!-- Header -->
@@ -32,7 +33,7 @@ import { SupabaseService } from '../services/supabase.service';
                 <div class="flex items-center gap-6 mb-6">
                     <div class="relative w-24 h-24 shrink-0">
                         @if (userAvatar()) {
-                            <img [src]="userAvatar()" alt="Profile" class="w-24 h-24 rounded-full object-cover" />
+                            <img [src]="userAvatar() | avatarThumb: 96" alt="Profile" class="w-24 h-24 rounded-full object-cover" />
                         } @else {
                             <div
                                 class="w-24 h-24 rounded-full bg-primary-500 flex items-center justify-center text-white text-3xl font-bold"

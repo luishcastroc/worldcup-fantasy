@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { InviteService } from '../services/invite.service';
+import { AvatarThumbPipe } from '../pipes/avatar-thumb.pipe';
 
 @Component({
     selector: 'app-invite-page',
     standalone: true,
-    imports: [FormsModule],
+    imports: [FormsModule, AvatarThumbPipe],
     template: `
         <div
             class="min-h-screen bg-linear-to-br from-fifa-dark via-primary-900 to-fifa-dark flex items-center justify-center px-4"
@@ -33,7 +34,7 @@ import { InviteService } from '../services/invite.service';
                         @if (auth.currentProfile(); as profile) {
                             <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                 @if (auth.getUserAvatar(); as avatar) {
-                                    <img [src]="avatar" alt="Avatar" class="w-10 h-10 rounded-full" />
+                                    <img [src]="avatar | avatarThumb: 40" alt="Avatar" class="w-10 h-10 rounded-full object-cover" />
                                 } @else {
                                     <div
                                         class="w-10 h-10 rounded-full bg-fifa-gold flex items-center justify-center text-fifa-dark font-bold"
@@ -142,7 +143,7 @@ export class InvitePageComponent {
             const result = await this.inviteService.redeemCode(this.code);
 
             if (result === 'ok' || result === 'already_approved') {
-                await this.auth.profileResource.reload();
+                this.auth.profileResource.reload();
                 this.router.navigate(['/matches']);
             } else if (result === 'invalid') {
                 this.errorMessage.set('Código inválido o ya utilizado. Verifica e inténtalo de nuevo.');

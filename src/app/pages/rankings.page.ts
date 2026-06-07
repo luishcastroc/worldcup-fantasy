@@ -9,11 +9,12 @@ import { RouterLink } from '@angular/router';
 
 import { RankingsService } from '../services/rankings.service';
 import { SupabaseService } from '../services/supabase.service';
+import { AvatarThumbPipe } from '../pipes/avatar-thumb.pipe';
 
 @Component({
     selector: 'app-rankings-page',
     standalone: true,
-    imports: [RouterLink],
+    imports: [RouterLink, AvatarThumbPipe],
     template: `
         <div class="max-w-7xl mx-auto px-4 py-6">
             <!-- Header -->
@@ -153,9 +154,9 @@ import { SupabaseService } from '../services/supabase.service';
                                             <div class="flex items-center gap-3">
                                                 @if (ranking.avatar_url) {
                                                     <img
-                                                        [src]="ranking.avatar_url"
+                                                        [src]="ranking.avatar_url | avatarThumb: 40"
                                                         [alt]="ranking.username"
-                                                        class="w-10 h-10 rounded-full"
+                                                        class="w-10 h-10 rounded-full object-cover"
                                                     />
                                                 } @else {
                                                     <div

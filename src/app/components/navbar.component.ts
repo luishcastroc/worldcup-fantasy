@@ -12,11 +12,12 @@ import {
 
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
+import { AvatarThumbPipe } from '../pipes/avatar-thumb.pipe';
 
 @Component({
     selector: 'app-navbar',
     standalone: true,
-    imports: [RouterLink, RouterLinkActive],
+    imports: [RouterLink, RouterLinkActive, AvatarThumbPipe],
     template: `
         @if (isAuthenticated()) {
             <nav class="bg-white shadow-md sticky top-0 z-50">
@@ -58,7 +59,7 @@ import { SupabaseService } from '../services/supabase.service';
                             <div class="relative">
                                 <button (click)="toggleMenu()" class="flex items-center gap-2 focus:outline-none">
                                     @if (userAvatar()) {
-                                        <img [src]="userAvatar()" [alt]="userName()" class="w-8 h-8 rounded-full object-cover" />
+                                        <img [src]="userAvatar() | avatarThumb: 32" [alt]="userName()" class="w-8 h-8 rounded-full object-cover" />
                                     } @else {
                                         <div
                                             class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-medium"

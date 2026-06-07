@@ -12,11 +12,12 @@ import { TeamFlagComponent } from '../components/team-flag.component';
 import { PredictionsService } from '../services/predictions.service';
 import { SupabaseService } from '../services/supabase.service';
 import { PredictionWithMatch, UserRanking } from '../models';
+import { AvatarThumbPipe } from '../pipes/avatar-thumb.pipe';
 
 @Component({
     selector: 'app-user-predictions-page',
     standalone: true,
-    imports: [DatePipe, TeamFlagComponent, RouterLink],
+    imports: [DatePipe, TeamFlagComponent, RouterLink, AvatarThumbPipe],
     template: `
         <div class="max-w-7xl mx-auto px-4 py-6">
             <!-- Back link -->
@@ -42,9 +43,9 @@ import { PredictionWithMatch, UserRanking } from '../models';
                     <div class="flex items-center gap-3 mb-2">
                         @if (userRanking()?.avatar_url) {
                             <img
-                                [src]="userRanking()!.avatar_url"
+                                [src]="userRanking()!.avatar_url | avatarThumb: 48"
                                 [alt]="userRanking()!.username"
-                                class="w-12 h-12 rounded-full"
+                                class="w-12 h-12 rounded-full object-cover"
                             />
                         } @else {
                             <div class="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold text-lg">
