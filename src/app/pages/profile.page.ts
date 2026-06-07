@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../services/auth.service';
+import { AvatarValidationError, CloudinaryService } from '../services/cloudinary.service';
 import { InviteService } from '../services/invite.service';
 import { PredictionsService } from '../services/predictions.service';
 import { SupabaseService } from '../services/supabase.service';
@@ -29,20 +30,70 @@ import { SupabaseService } from '../services/supabase.service';
             <!-- Profile Card -->
             <div class="card p-6 mb-6">
                 <div class="flex items-center gap-6 mb-6">
-                    @if (userAvatar()) {
-                        <img [src]="userAvatar()" alt="Profile" class="w-24 h-24 rounded-full" />
-                    } @else {
-                        <div
-                            class="w-24 h-24 rounded-full bg-primary-500 flex items-center justify-center text-white text-3xl font-bold"
+                    <div class="relative w-24 h-24 shrink-0">
+                        @if (userAvatar()) {
+                            <img [src]="userAvatar()" alt="Profile" class="w-24 h-24 rounded-full object-cover" />
+                        } @else {
+                            <div
+                                class="w-24 h-24 rounded-full bg-primary-500 flex items-center justify-center text-white text-3xl font-bold"
+                            >
+                                {{ userInitial() }}
+                            </div>
+                        }
+
+                        <!-- Camera overlay button -->
+                        <button
+                            type="button"
+                            (click)="fileInput.click()"
+                            [disabled]="isUploadingAvatar()"
+                            class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-md ring-2 ring-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title="Cambiar foto"
                         >
-                            {{ userInitial() }}
-                        </div>
-                    }
+                            @if (isUploadingAvatar()) {
+                                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            } @else {
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            }
+                        </button>
+                        <input
+                            #fileInput
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            class="hidden"
+                            (change)="onAvatarSelected($event)"
+                        />
+                    </div>
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900">{{ userName() }}</h2>
                         <p class="text-gray-500">{{ userEmail() }}</p>
+                        @if (userAvatar()) {
+                            <button
+                                type="button"
+                                (click)="removeAvatar()"
+                                [disabled]="isUploadingAvatar()"
+                                class="text-sm text-red-600 hover:text-red-700 mt-1 disabled:opacity-50"
+                            >
+                                Quitar foto
+                            </button>
+                        }
                     </div>
                 </div>
+
+                @if (avatarMessage()) {
+                    <p
+                        class="text-sm mb-4"
+                        [class.text-green-600]="!avatarError()"
+                        [class.text-red-600]="avatarError()"
+                    >
+                        {{ avatarMessage() }}
+                    </p>
+                }
 
                 <!-- Edit Username -->
                 <div class="border-t pt-6">
@@ -206,6 +257,7 @@ export class ProfilePageComponent implements OnInit {
     authService = inject(AuthService);
     supabaseService = inject(SupabaseService);
     predictionsService = inject(PredictionsService);
+    cloudinaryService = inject(CloudinaryService);
     router = inject(Router);
     protected readonly inviteService = inject(InviteService);
 
@@ -224,6 +276,10 @@ export class ProfilePageComponent implements OnInit {
     isSaving = signal(false);
     saveMessage = signal('');
     saveError = signal(false);
+
+    isUploadingAvatar = signal(false);
+    avatarMessage = signal('');
+    avatarError = signal(false);
 
     /** Derive stats reactively from the predictions resource. */
     stats = computed(() => ({
@@ -245,9 +301,58 @@ export class ProfilePageComponent implements OnInit {
     };
 
     userAvatar = () => {
+        const profileAvatar = this.authService.currentProfile()?.avatar_url;
+        if (profileAvatar) return profileAvatar;
         const user = this.supabaseService.currentUser();
         return user?.user_metadata?.['avatar_url'] || user?.user_metadata?.['picture'] || null;
     };
+
+    async onAvatarSelected(event: Event): Promise<void> {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        // Reset the input so selecting the same file again still fires change.
+        input.value = '';
+        if (!file) return;
+
+        this.isUploadingAvatar.set(true);
+        this.avatarMessage.set('');
+        this.avatarError.set(false);
+
+        try {
+            const url = await this.cloudinaryService.uploadAvatar(file);
+            await this.authService.updateProfile({ avatar_url: url });
+            this.avatarMessage.set('¡Foto actualizada!');
+            this.avatarError.set(false);
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            this.avatarError.set(true);
+            this.avatarMessage.set(
+                error instanceof AvatarValidationError
+                    ? error.message
+                    : 'Error al subir la foto. Intenta de nuevo.',
+            );
+        } finally {
+            this.isUploadingAvatar.set(false);
+        }
+    }
+
+    async removeAvatar(): Promise<void> {
+        this.isUploadingAvatar.set(true);
+        this.avatarMessage.set('');
+        this.avatarError.set(false);
+
+        try {
+            await this.authService.updateProfile({ avatar_url: null });
+            this.avatarMessage.set('Foto eliminada.');
+            this.avatarError.set(false);
+        } catch (error) {
+            console.error('Error removing avatar:', error);
+            this.avatarError.set(true);
+            this.avatarMessage.set('Error al quitar la foto. Intenta de nuevo.');
+        } finally {
+            this.isUploadingAvatar.set(false);
+        }
+    }
 
     userInitial = () => {
         const name = this.userName();

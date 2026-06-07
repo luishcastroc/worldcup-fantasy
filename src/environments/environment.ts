@@ -3,4 +3,6 @@ export const environment = {
   supabaseUrl: (import.meta.env.VITE_SUPABASE_URL ?? '').trim(),
   supabaseAnonKey: (import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim(),
   predictionDeadline: (import.meta.env.VITE_PREDICTION_DEADLINE ?? '2026-06-11T00:00:00Z').trim(),
+  cloudinaryCloudName: (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? '').trim(),
+  cloudinaryUploadPreset: (import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? '').trim(),
 };

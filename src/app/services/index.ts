@@ -3,3 +3,4 @@ export * from './auth.service';
 export * from './matches.service';
 export * from './predictions.service';
 export * from './rankings.service';
+export * from './cloudinary.service';

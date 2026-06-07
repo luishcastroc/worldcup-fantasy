@@ -58,7 +58,7 @@ import { SupabaseService } from '../services/supabase.service';
                             <div class="relative">
                                 <button (click)="toggleMenu()" class="flex items-center gap-2 focus:outline-none">
                                     @if (userAvatar()) {
-                                        <img [src]="userAvatar()" [alt]="userName()" class="w-8 h-8 rounded-full" />
+                                        <img [src]="userAvatar()" [alt]="userName()" class="w-8 h-8 rounded-full object-cover" />
                                     } @else {
                                         <div
                                             class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-medium"
@@ -209,6 +209,8 @@ export class NavbarComponent {
     });
 
     userAvatar = computed(() => {
+        const profileAvatar = this.authService.currentProfile()?.avatar_url;
+        if (profileAvatar) return profileAvatar;
         const user = this.supabase.currentUser();
         return user?.user_metadata?.['avatar_url'] || user?.user_metadata?.['picture'] || null;
     });
