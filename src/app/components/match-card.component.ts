@@ -20,9 +20,10 @@ type MatchDisplayStatus = 'upcoming' | 'in_progress' | 'completed' | 'pending_re
     selector: 'app-match-card',
     standalone: true,
     imports: [DatePipe, TeamFlagComponent, PredictionFormComponent],
+    host: { class: 'block h-full' },
     template: `
         <div
-            class="card-hover p-4"
+            class="card-hover p-4 h-full flex flex-col"
             [class.border-l-4]="true"
             [class.border-l-green-500]="hasPrediction()"
             [class.border-l-yellow-500]="!hasPrediction() && canPredict()"
@@ -124,7 +125,7 @@ type MatchDisplayStatus = 'upcoming' | 'in_progress' | 'completed' | 'pending_re
 
             <!-- Prediction Section -->
             @if (showPrediction()) {
-                <div class="border-t pt-4 mt-4">
+                <div class="border-t pt-4 mt-auto">
                     <h4 class="text-sm font-medium text-gray-700 text-center mb-3">
                         @if (canPredict()) {
                             Tu Predicción
