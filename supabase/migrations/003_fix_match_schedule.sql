@@ -73,7 +73,7 @@ INSERT INTO public.matches (home_team_id, away_team_id, match_date, venue, city,
 INSERT INTO public.matches (home_team_id, away_team_id, match_date, venue, city, group_letter) VALUES
 ((SELECT id FROM teams WHERE code='GHA'),(SELECT id FROM teams WHERE code='PAN'),'2026-06-17 19:00:00-04','BMO Field','Toronto','L');
 INSERT INTO public.matches (home_team_id, away_team_id, match_date, venue, city, group_letter) VALUES
-((SELECT id FROM teams WHERE code='AUT'),(SELECT id FROM teams WHERE code='JOR'),'2026-06-17 21:00:00-07','Levi''s Stadium','San Francisco','J');
+((SELECT id FROM teams WHERE code='AUT'),(SELECT id FROM teams WHERE code='JOR'),'2026-06-16 21:00:00-07','Levi''s Stadium','San Francisco','J');
 INSERT INTO public.matches (home_team_id, away_team_id, match_date, venue, city, group_letter) VALUES
 ((SELECT id FROM teams WHERE code='UZB'),(SELECT id FROM teams WHERE code='COL'),'2026-06-17 21:00:00-05','Estadio Azteca','Ciudad de México','K');
 
