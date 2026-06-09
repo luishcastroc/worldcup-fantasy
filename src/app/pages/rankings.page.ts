@@ -75,9 +75,80 @@ import { AvatarThumbPipe } from '../pipes/avatar-thumb.pipe';
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
                 </div>
             } @else {
-                <!-- Rankings Table -->
+                <!-- Rankings -->
                 @if (filteredRankings().length > 0) {
-                    <div class="card overflow-hidden">
+                    <!-- Mobile: card list -->
+                    <div class="space-y-3 sm:hidden">
+                        @for (ranking of filteredRankings(); track ranking.user_id) {
+                            <div
+                                class="card p-4 cursor-pointer transition-colors active:bg-gray-50"
+                                [class.bg-primary-50]="isCurrentUser(ranking.user_id)"
+                                [routerLink]="isCurrentUser(ranking.user_id) ? ['/my-predictions'] : ['/user', ranking.user_id, 'predictions']"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <!-- Rank -->
+                                    @if (ranking.rank === 1) {
+                                        <span class="shrink-0 inline-flex items-center justify-center w-9 h-9 bg-yellow-400 text-yellow-900 rounded-full font-bold">🥇</span>
+                                    } @else if (ranking.rank === 2) {
+                                        <span class="shrink-0 inline-flex items-center justify-center w-9 h-9 bg-gray-300 text-gray-700 rounded-full font-bold">🥈</span>
+                                    } @else if (ranking.rank === 3) {
+                                        <span class="shrink-0 inline-flex items-center justify-center w-9 h-9 bg-amber-600 text-white rounded-full font-bold">🥉</span>
+                                    } @else {
+                                        <span class="shrink-0 inline-flex items-center justify-center w-9 h-9 bg-gray-100 text-gray-700 rounded-full font-bold text-sm">{{ ranking.rank }}</span>
+                                    }
+
+                                    <!-- Avatar -->
+                                    @if (ranking.avatar_url) {
+                                        <img
+                                            [src]="ranking.avatar_url | avatarThumb: 40"
+                                            [alt]="ranking.username"
+                                            class="shrink-0 w-10 h-10 rounded-full object-cover"
+                                        />
+                                    } @else {
+                                        <div class="shrink-0 w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-medium">
+                                            {{ getInitial(ranking.username) }}
+                                        </div>
+                                    }
+
+                                    <!-- Name -->
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-gray-900 truncate">
+                                            {{ ranking.username || 'Anónimo' }}
+                                            @if (isCurrentUser(ranking.user_id)) {
+                                                <span class="text-primary-600 text-sm">(Tú)</span>
+                                            }
+                                        </p>
+                                        <p class="text-xs text-gray-400">Ver predicciones</p>
+                                    </div>
+
+                                    <!-- Points -->
+                                    <div class="shrink-0 text-right">
+                                        <p class="text-2xl font-bold text-primary-600 leading-none">{{ ranking.total_points }}</p>
+                                        <p class="text-xs text-gray-400">puntos</p>
+                                    </div>
+                                </div>
+
+                                <!-- Stat breakdown -->
+                                <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-100 text-center">
+                                    <div>
+                                        <p class="text-base font-semibold text-green-600">{{ ranking.exact_predictions }}</p>
+                                        <p class="text-xs text-gray-500">Exactos</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-base font-semibold text-blue-600">{{ ranking.correct_outcomes }}</p>
+                                        <p class="text-xs text-gray-500">Solo Resultado</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-base font-semibold text-gray-600">{{ ranking.total_predictions }}</p>
+                                        <p class="text-xs text-gray-500">Predicciones</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Desktop: table -->
+                    <div class="card overflow-hidden hidden sm:block">
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr>
