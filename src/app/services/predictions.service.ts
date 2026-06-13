@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, resource, ResourceRef, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { Prediction, PredictionInput, PredictionWithMatch } from '../models';
+import { MatchScorer, Prediction, PredictionInput, PredictionWithMatch } from '../models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -71,6 +71,61 @@ export class PredictionsService {
       return map;
     },
     defaultValue: new Map<number, Prediction>(),
+  });
+
+  /**
+   * Resource that loads every point-scoring prediction across all users,
+   * joined with the predictor's profile name/avatar. Powers the "who got it
+   * right" list on the results page. Only predictions with points_earned > 0
+   * are returned, which implicitly limits this to completed matches.
+   */
+  matchScorersResource: ResourceRef<MatchScorer[]> = resource({
+    params: () => ({ _reload: this.reloadTrigger() }),
+    loader: async () => {
+      const { data, error } = await this.supabase.client
+        .from('predictions')
+        .select(`
+          match_id,
+          points_earned,
+          predicted_home_score,
+          predicted_away_score,
+          profile:profiles(username, avatar_url)
+        `)
+        .gt('points_earned', 0);
+
+      if (error) throw error;
+
+      return (data || []).map((row: any) => ({
+        match_id: row.match_id,
+        points_earned: row.points_earned,
+        predicted_home_score: row.predicted_home_score,
+        predicted_away_score: row.predicted_away_score,
+        username: row.profile?.username ?? null,
+        avatar_url: row.profile?.avatar_url ?? null,
+      })) as MatchScorer[];
+    },
+    defaultValue: [],
+  });
+
+  /**
+   * Scorers grouped by match id. Within each match, exact predictions (3 pts)
+   * come first, then correct outcomes (1 pt); ties broken alphabetically.
+   */
+  scorersByMatch = computed(() => {
+    const map = new Map<number, MatchScorer[]>();
+    for (const scorer of this.matchScorersResource.value()) {
+      const list = map.get(scorer.match_id) ?? [];
+      list.push(scorer);
+      map.set(scorer.match_id, list);
+    }
+    for (const list of map.values()) {
+      list.sort(
+        (a, b) =>
+          b.points_earned - a.points_earned ||
+          (a.username ?? '').localeCompare(b.username ?? '')
+      );
+    }
+    return map;
   });
 
   // Convenience computed signals (backward-compatible API)

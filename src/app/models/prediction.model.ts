@@ -23,6 +23,16 @@ export interface PredictionWithMatch extends Prediction {
     match: MatchWithTeams;
 }
 
+/** A user who scored points on a given match — used on the results page. */
+export interface MatchScorer {
+    match_id: number;
+    points_earned: number;
+    predicted_home_score: number;
+    predicted_away_score: number;
+    username: string | null;
+    avatar_url: string | null;
+}
+
 export type PredictionOutcome = 'L' | 'V' | 'T'; // Local (home), Visitor (away), Tie
 
 export function getPredictionOutcome(homeScore: number, awayScore: number): PredictionOutcome {
